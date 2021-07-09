@@ -539,8 +539,8 @@ def schedule_countdown():
         scheduled_name2 = scheduleDF.iloc[1, 0]
         scheduled_time2 = datetime.datetime.strptime(scheduleDF.iloc[1, 1], '%Y-%m-%d %H:%M:%S')
         time_left2 = scheduled_time2 - time
-        strList.append(f'The ongoing buzzle hunt, {scheduled_name}, ends in {time_left}, on {scheduled_end.strftime("%A, %b %d, at %H:%M:%S")}')
-        strList.append(f'Time to the next buzzle hunt, {scheduled_name2}, is in {time_left2}, on {scheduled_time2.strftime("%A, %b %d, at %H:%M:%S")}')
+        strList.append(f'**Ongoing:**\nThe ongoing buzzle hunt, {scheduled_name}, ends in {time_left}, on {scheduled_end.strftime("%A, %b %d, at %H:%M:%S")}')
+        strList.append(f'**Next:**\nTime to the next buzzle hunt, {scheduled_name2}, is in {time_left2}, on {scheduled_time2.strftime("%A, %b %d, at %H:%M:%S")}')
         return '\n'.join(strList)
     else:
         return f'Time to the next buzzle hunt, {scheduled_name}, is in {time_left}, on {scheduled_time.strftime("%A, %b %d, at %H:%M:%S")}'
@@ -557,14 +557,28 @@ def timer():
     timeTrue = time == scheduled_time
     scheduled_end = scheduleDF.iloc[0, 2]
     time_left = scheduled_time - time
+    if timeTrue:
+        return 'start'
+    elif time_left > datetime.timedelta(hours=0):
+        return False
     try:
         scheduled_end = datetime.datetime.strptime(scheduled_end, '%Y-%m-%d %H:%M:%S')
     except ValueError:
         scheduled_end = False
-    if (timeTrue or time_left < datetime.timedelta(hours=0)) and scheduled_end is False:
+    if scheduled_end is False:
         scheduleDF = scheduleDF.iloc[1:]
         scheduleDF.to_csv("./data/schedule.csv", index=False)
-    return timeTrue
+    else:
+        endTrue = time == scheduled_end
+        time_end = scheduled_end - time
+        if endTrue is True:
+            scheduleDF = scheduleDF.iloc[1:]
+            scheduleDF.to_csv("./data/schedule.csv", index=False)
+            return 'end'
+        elif time_end < datetime.timedelta(hours=0):
+            scheduleDF = scheduleDF.iloc[1:]
+            scheduleDF.to_csv("./data/schedule.csv", index=False)
+    return False
 
 
 

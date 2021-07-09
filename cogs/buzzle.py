@@ -15,9 +15,10 @@ class buzzleCogs(commands.Cog, name='Buzzle'):
         timer_state = Buzzle.timer()
         if timer_state == 'start':
             await self.bot.get_channel(826343308870680646).send(f"Buzzle time")  # spam
-            #await self.bot.get_channel(768448152826282019).send(f"Buzzle time")  # buzzle
+            await self.bot.get_channel(768448152826282019).send(f"Buzzle time")  # buzzle
         elif timer_state == 'end':
             await self.bot.get_channel(826343308870680646).send(f"Buzzle end")
+            await self.bot.get_channel(768448152826282019).send(f"Buzzle end")  # buzzle
 
     @commands.command(brief='Checks the countdown to the next buzzle', aliases=['countdown'])
     async def cd(self, ctx):
@@ -126,7 +127,7 @@ class buzzleCogs(commands.Cog, name='Buzzle'):
             await ctx.send(Buzzle.multi_tap(arg))
 
     @commands.command(aliases=['sch'], brief='Schedule a queue of upcoming buzzle hunt')
-    async def schedule(self, ctx, arg=None):
+    async def schedule(self, ctx, arg='c'):
         if arg is None:
             await ctx.send("Usage: !sch <list number on !cal or 'c' to check>")
         elif arg == 'c':
