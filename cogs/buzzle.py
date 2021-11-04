@@ -17,14 +17,14 @@ class buzzleCogs(commands.Cog, name='Buzzle'):
             await self.bot.get_channel(826343308870680646).send(f"Buzzle time")  # spam
             await self.bot.get_channel(768448152826282019).send(f"Buzzle time")  # buzzle
         elif timer_state == 'end':
-            await self.bot.get_channel(826343308870680646).send(f"Buzzle end")
+            await self.bot.get_channel(826343308870680646).send(f"Buzzle end")  # spam
             await self.bot.get_channel(768448152826282019).send(f"Buzzle end")  # buzzle
 
     @commands.command(brief='Checks the countdown to the next buzzle', aliases=['countdown'])
     async def cd(self, ctx):
         await ctx.send(Buzzle.schedule_countdown())
 
-    @commands.command(brief='A1Z26 encoder/decoder')
+    @commands.command(brief='A1Z26 encoder/decoder', aliases=["az"])
     async def a1z26(self, ctx, *, arg=None):
         if not arg:
             await ctx.send('Usage !a1z26 <text to decode/encode>')
@@ -43,7 +43,7 @@ class buzzleCogs(commands.Cog, name='Buzzle'):
         if not arg:
             await ctx.send("Usage: !ascii [+(for hex)]<int, str, 8bit binary or hex>")
         else:
-            await ctx.send(Buzzle.ascii_decoder(arg))
+            await ctx.send(Buzzle.ascii_decoder(arg)[:2000])
 
     @commands.command(brief='Morse code encoder/decoder')
     async def morse(self, ctx, *, arg=None):

@@ -14,16 +14,19 @@ def a1z26(text):  # a1z26 cipher
         for characterA1Z26 in text.upper():
             if characterA1Z26 == ' ':
                 a1z26List.append('/')
+            elif characterA1Z26 == '\n':
+                a1z26List.append('\n')
             else:
                 a1z26List.append(str(ord(characterA1Z26) - 64))
         a1z26final = ' '.join(a1z26List)
     elif all(character.isdecimal() or character.isspace() for character in text):  # if decoding
         for numberA1Z26 in text.split():  # split the text by spaces
+            #a1z26List.append(chr(((int(numberA1Z26) - 1) + 944)))
             a1z26List.append(chr(((int(numberA1Z26) - 1) % 26 + 65)))  # a1z26 to ASCII then to char
         a1z26final = ''.join(a1z26List)
     else:
         return 'Type only integers (decode) or alpha (encode)'
-    return a1z26final
+    return a1z26final.lower()
 
 
 def caesar(text):
@@ -75,7 +78,7 @@ def ascii_decoder(text):
     asciiList = []
     if all(character.isdecimal() or character.isspace() for character in text):
         for number in text.split():
-            if len(number) == 12 and all(character == '1' or character == '0' for character in number):
+            if len(number) == 8 and all(character == '1' or character == '0' for character in number):
                 asciiList.append(chr(int(number, 2)))
             else:
                 asciiList.append(chr(int(number)))
@@ -173,7 +176,7 @@ def freq(text):
         freqDict[character] += 1
     freqDict.pop('\n', None)
     for characterType, characterCount in freqDict.items():
-        freqList.append(f"'{characterType}': {characterCount}")
+        freqList.append(f'"{characterType}": {characterCount}')
     freqList.sort()
     freqFinal = '\n'.join(freqList)
     return freqFinal
@@ -209,14 +212,22 @@ def calendar():
     res.raise_for_status()
     soup = bs4.BeautifulSoup(res.content, 'html.parser')
     idNum = 0
-    for elements in range(3, 12):
+    for elements in range(3, 13):
         elemsTime = soup.select(f'body > div:nth-child({elements}) > div.date')
         elemsName = soup.select(f'body > div:nth-child({elements}) > span.title')
-        elemsURL = soup.select(f'#\\3{idNum}  > a')
+        if idNum < 10:
+            elemsURL = soup.select(f'#\\3{str(idNum)}  > a')
+        else:
+            elemsURL = soup.select(f'#\\3{str(idNum)[0]} {str(idNum)[1]} > a')
         idNum += 1
         while not elemsURL:
-            elemsURL = soup.select(f'#\\3{idNum}  > a')
+            if idNum < 10:
+                elemsURL = soup.select(f'#\\3{str(idNum)}  > a')
+            else:
+                elemsURL = soup.select(f'#\\3{str(idNum)[0]} {str(idNum)[1]} > a')
             idNum += 1
+
+
         calendarList.append(
             f'**{elemsName[0].text.strip()}**: {elemsTime[0].text.strip()}\n<{elemsURL[0].text.strip()}>')
     calendarFinal = '\n'.join(calendarList)
@@ -378,19 +389,20 @@ def countdown():  # deprecated
 
 def schedule_search(month, day, link):
     timezones = {'PDT': 15, 'EST': 13, 'EDT': 12}
-    regex = fr'({month}[a-zA-Z]*|{day}) ({day}|{month}[a-zA-Z]*),? 202\d,? (at)? \d?\d:\d\d (p|a).?m.? [a-zA-Z](s|d|m)T(\+\d)?'
+    regex = fr'({month}[a-zA-Z]*|{day}) ({day}|{month}[a-zA-Z]*),? 202\d,? (at )?\d?\d:\d\d (p|a).?m.? [a-zA-Z](s|d|m)T(\+\d)?'
     res = requests.get(link)
     res.raise_for_status()
     buzzleMatch = re.search(regex, res.text, re.IGNORECASE)
-
     if buzzleMatch is None:
         return None
     buzzleTimeStr = buzzleMatch.group()
     buzzleTimeStr = buzzleTimeStr.replace(',', '')
     buzzleTime = datetime.datetime.strptime(' '.join(buzzleTimeStr.split()[:-2]), '%B %d %Y at %H:%M')
     buzzleTimeZone = buzzleTimeStr.split()[-1].upper()
-    if buzzleTimeStr.split()[-2].lower() == 'pm' or buzzleTimeStr.split()[-2].lower() == 'p.m.':
+    if (buzzleTimeStr.split()[-2].lower() == 'pm' or buzzleTimeStr.split()[-2].lower() == 'p.m.') and buzzleTime.hour != 12:
         buzzleTime = buzzleTime + datetime.timedelta(hours=12)
+    elif (buzzleTimeStr.split()[-2].lower() == 'am' or buzzleTimeStr.split()[-2].lower() == 'a.m.') and buzzleTime.hour == 12:
+        buzzleTime = buzzleTime - datetime.timedelta(hours=12)
     if buzzleTimeZone in timezones:
         buzzleTime = buzzleTime + datetime.timedelta(hours=timezones.get(buzzleTimeZone))
     elif buzzleTimeZone.startswith('GMT'):
@@ -484,7 +496,10 @@ def schedule_add(scheduled):
     buzzleTime = elemsTime[0].text.strip().split('-')[0]
     elemsDes = soup.find_all('div', class_='description')
     idNum = elemsDes[int(scheduled) - 1].get('id')
-    buzzleURL = soup.select(f'#\\3{idNum}  > a')[0].text.strip()
+    if int(idNum) < 10:
+        buzzleURL = soup.select(f'#\\3{idNum}  > a')[0].text.strip()
+    else:
+        buzzleURL = soup.select(f'#\\3{idNum[0]} {idNum[1]} > a')[0].text.strip()
     buzzleMonth = buzzleTime.split()[0]
     buzzleDay = buzzleTime.split()[1]
     buzzleDateTime = schedule_search(buzzleMonth, buzzleDay, buzzleURL)
@@ -493,7 +508,10 @@ def schedule_add(scheduled):
             buzzleDateTime = datetime.datetime.strptime(buzzleTime[:-1], '%b %d %H:%M')
         else:
             buzzleDateTime = datetime.datetime.strptime(buzzleTime, '%b %d')
-        buzzleDateTime = buzzleDateTime.replace(year=datetime.datetime.today().year)
+        if len(buzzleTime.split()) == 3:
+            buzzleDateTime = buzzleDateTime.replace(year=int(buzzleTime.split()[2]))
+        else:
+            buzzleDateTime = buzzleDateTime.replace(year=datetime.datetime.today().year)
         buzzleDateTime = buzzleDateTime + datetime.timedelta(hours=15)
         if buzzleTime[-1] == 'p':
             buzzleDateTime = buzzleDateTime + datetime.timedelta(hours=12)
