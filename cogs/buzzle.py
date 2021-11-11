@@ -1,24 +1,47 @@
 from discord.ext import commands, tasks
-import buzzleTools as Buzzle
+from modules import buzzleTools as Buzzle
+import discord
+
 
 
 class buzzleCogs(commands.Cog, name='Buzzle'):
     def __init__(self, bot):
         self.bot = bot
 
+    roles_list = {'🅱️': "🅱️"}
+
     @commands.Cog.listener()
     async def on_ready(self):
         await self.timer.start()
+
+    @commands.Cog.listener()
+    async def on_raw_reaction_add(self, payload):
+        user = payload.member
+        if payload.message_id in [905750912532893717, 905753216568942592]:
+            if payload.emoji.name in self.roles_list:
+                role_name = self.roles_list.get(payload.emoji.name)
+                role = discord.utils.get(self.bot.get_guild(payload.guild_id).roles, name=role_name)
+                await user.add_roles(role)
+
+    @commands.Cog.listener()
+    async def on_raw_reaction_remove(self, payload):
+        guild = await self.bot.fetch_guild(payload.guild_id)
+        user = await guild.fetch_member(payload.user_id)
+        if payload.message_id in [905750912532893717, 905753216568942592]:
+            if payload.emoji.name in self.roles_list:
+                role_name = self.roles_list.get(payload.emoji.name)
+                role = discord.utils.get(self.bot.get_guild(payload.guild_id).roles, name=role_name)
+                await user.remove_roles(role)
 
     @tasks.loop(seconds=1)
     async def timer(self):
         timer_state = Buzzle.timer()
         if timer_state == 'start':
-            await self.bot.get_channel(826343308870680646).send(f"Buzzle time")  # spam
-            await self.bot.get_channel(768448152826282019).send(f"Buzzle time")  # buzzle
+            await self.bot.get_channel(826343308870680646).send(f"Buzzle time <@&905730976892715008>")  # spam
+            await self.bot.get_channel(768448152826282019).send(f"Buzzle time <@&905750415629516801>")  # buzzle
         elif timer_state == 'end':
-            await self.bot.get_channel(826343308870680646).send(f"Buzzle end")  # spam
-            await self.bot.get_channel(768448152826282019).send(f"Buzzle end")  # buzzle
+            await self.bot.get_channel(826343308870680646).send(f"Buzzle end <@&905730976892715008>")  # spam
+            await self.bot.get_channel(768448152826282019).send(f"Buzzle end <@&905750415629516801>")  # buzzle
 
     @commands.command(brief='Checks the countdown to the next buzzle', aliases=['countdown'])
     async def cd(self, ctx):
@@ -138,6 +161,7 @@ class buzzleCogs(commands.Cog, name='Buzzle'):
     @commands.command(brief='Remove the last added item on the schedule')
     async def pop(self, ctx):
         await ctx.send(Buzzle.schedule_remove())
+
 
 
 def setup(bot):

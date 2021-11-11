@@ -1,8 +1,7 @@
 from discord.ext import commands
-import fun_commands as fun
 import random
 import time
-import bad_apple as ba
+from modules import bad_apple as ba, fun_commands as fun
 import discord
 
 

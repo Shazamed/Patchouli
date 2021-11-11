@@ -3,7 +3,6 @@ import bs4
 import requests
 from urllib.parse import quote
 import datetime
-import json
 import re
 import pandas
 
@@ -355,38 +354,6 @@ def multi_tap(text):
         return phoneFinal
 
 
-def old_timer(): # deprecated
-    time = datetime.datetime.today()
-    with open('./data/schedule.json') as f:
-        scheduledDict = json.load(f)
-    if scheduledDict == {}:
-        return False
-    scheduled_name = next(iter(scheduledDict))
-    scheduled_time = scheduledDict[scheduled_name]
-    scheduled_time = datetime.datetime.strptime(scheduled_time, '%Y-%m-%d %H:%M:%S')
-    timeTrue = (time.second == scheduled_time.second and time.minute == scheduled_time.minute and
-                time.hour == scheduled_time.hour and time.day == scheduled_time.day and
-                time.month == scheduled_time.month)
-    if timeTrue:
-        scheduledDict.pop(list(scheduledDict)[0])
-        with open('./data/schedule.json', 'w') as f:
-            json.dump(scheduledDict, f)
-    return timeTrue
-
-
-def countdown():  # deprecated
-    time = datetime.datetime.today().replace(microsecond=0)
-    with open('./data/schedule.json') as f:
-        scheduledDict = json.load(f)
-    if scheduledDict == {}:
-        return 'There are no buzzles scheduled. Use !sch [list number of !cal] to schedule a buzzle hunt'
-    scheduled_name = list(scheduledDict)[0]
-    scheduled_time = scheduledDict[scheduled_name]
-    scheduled_time = datetime.datetime.strptime(scheduled_time, '%Y-%m-%d %H:%M:%S')
-    time_left = scheduled_time - time
-    return f'Time to the next buzzle hunt, {scheduled_name}, is in {time_left}, on {scheduled_time.strftime("%A, %b %d, at %H:%M:%S")}'
-
-
 def schedule_search(month, day, link):
     timezones = {'PDT': 15, 'EST': 13, 'EDT': 12}
     regex = fr'({month}[a-zA-Z]*|{day}) ({day}|{month}[a-zA-Z]*),? 202\d,? (at )?\d?\d:\d\d (p|a).?m.? [a-zA-Z](s|d|m)T(\+\d)?'
@@ -411,67 +378,6 @@ def schedule_search(month, day, link):
         else:
             buzzleTime = buzzleTime + datetime.timedelta(hours=8 + int(buzzleTimeZone[-1]))
     return buzzleTime
-
-
-def schedule(scheduled):  # deprecated
-    string_list = ['Schedule:']
-    calURL = 'http://puzzlehuntcalendar.com/'
-    res = requests.get(calURL)
-    res.raise_for_status()
-    soup = bs4.BeautifulSoup(res.content, 'html.parser')
-    elemsTime = soup.select(f'body > div:nth-child({int(scheduled) + 2}) > div.date')
-    elemsName = soup.select(f'body > div:nth-child({int(scheduled) + 2}) > span.title')
-    buzzleName = elemsName[0].text.strip()
-    buzzleTime = elemsTime[0].text.strip().split('-')[0]
-    elemsDes = soup.find_all('div', class_='description')
-    idNum = elemsDes[int(scheduled) - 1].get('id')
-    buzzleURL = soup.select(f'#\\3{idNum}  > a')[0].text.strip()
-    buzzleMonth = buzzleTime.split()[0]
-    buzzleDay = buzzleTime.split()[1]
-    buzzleDateTime = schedule_search(buzzleMonth, buzzleDay, buzzleURL)
-    if buzzleDateTime is None:
-        if ':' in buzzleTime:
-            buzzleDateTime = datetime.datetime.strptime(buzzleTime[:-1], '%b %d %H:%M')
-        else:
-            buzzleDateTime = datetime.datetime.strptime(buzzleTime, '%b %d')
-        buzzleDateTime = buzzleDateTime.replace(year=datetime.datetime.today().year)
-        buzzleDateTime = buzzleDateTime + datetime.timedelta(hours=15)
-        if buzzleTime[-1] == 'p':
-            buzzleDateTime = buzzleDateTime + datetime.timedelta(hours=12)
-    with open('./data/schedule.json') as f:
-        scheduledDict = json.load(f)
-    scheduledDict[buzzleName] = str(buzzleDateTime)
-    with open('./data/schedule.json', 'w') as f:
-        json.dump(scheduledDict, f)
-    for name, time in scheduledDict.items():
-        string_list.append(f'**{name}**: {time}')
-    scheduledFinal = '\n'.join(string_list)
-    return scheduledFinal
-
-
-def readschedule():  # deprecated
-    string_list = ['Schedule:']
-    with open('./data/schedule.json') as f:
-        scheduledDict = json.load(f)
-    for name, time in scheduledDict.items():
-        string_list.append(f'**{name}**: {time}')
-    scheduledFinal = '\n'.join(string_list)
-    return scheduledFinal
-
-
-def popjson():  # deprecated
-    string_list = ['Schedule:']
-    with open('./data/schedule.json') as f:
-        scheduledDict = json.load(f)
-    if scheduledDict == {}:
-        return 'There are no scheduled buzzle hunts to remove.'
-    scheduledDict.pop(list(scheduledDict)[-1], None)
-    with open('./data/schedule.json', 'w') as f:
-        json.dump(scheduledDict, f)
-    for name, time in scheduledDict.items():
-        string_list.append(f'**{name}**: {time}')
-    scheduledFinal = '\n'.join(string_list)
-    return scheduledFinal
 
 
 def schedule_read():

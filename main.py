@@ -2,13 +2,13 @@ from discord.ext import commands
 import discord
 import youtube_dl
 import os
-import fun_commands as fun
+from modules import fun_commands as fun
 from dotenv import load_dotenv
 
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 
-initial_extensions = ['cogs.buzzle', 'cogs.fun']
+initial_extensions = ['cogs.buzzle', 'cogs.fun', 'cogs.puzzlehuntCog']
 
 bot = commands.Bot(command_prefix='!')
 
@@ -41,7 +41,7 @@ async def on_message(message):
     if message.content.lower().startswith('hmm'):
         emoji = '<a:thonking:831789205225996288>'
         await message.add_reaction(emoji)
-    if message.content.lower().endswith('solved'):
+    if message.content.lower().endswith('solved') and message.content[0] != "!":
         emoji = '<a:rumiadance:831782682329088000>'
         await message.channel.send(emoji)
     if message.content.lower().startswith('ayaya'):
