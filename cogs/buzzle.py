@@ -162,6 +162,13 @@ class buzzleCogs(commands.Cog, name='Buzzle'):
     async def pop(self, ctx):
         await ctx.send(Buzzle.schedule_remove())
 
+    @commands.command(brief='Cryptogram solver by quipquip', aliases=['quipquip'])
+    async def quip(self, ctx, *, arg=None):
+        if arg is None:
+            await ctx.send("Usage: !quip <text to solve>")
+        else:
+            await ctx.send(Buzzle.quipquip(arg))
+
 
 
 def setup(bot):

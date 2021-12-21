@@ -1,4 +1,4 @@
-from discord.ext import commands, tasks
+from discord.ext import commands
 from modules import puzzlehunt
 import discord
 
@@ -17,7 +17,10 @@ class PuzzleHuntCogs(commands.Cog, name='Puzzlehunt'):
     @commands.command(hidden=True)
     async def guess(self, ctx, *, arg=None):
         authorID = ctx.author.id
-        await ctx.send(puzzlehunt.puzzle_guess(authorID, arg))
+        if arg is not None:
+            await ctx.send(puzzlehunt.puzzle_guess(authorID, arg))
+        else:
+            await ctx.send("Usage: !guess (puzzle no), (answer)")
 
     @commands.command(hidden=True)
     async def solved(self, ctx):
@@ -29,8 +32,23 @@ class PuzzleHuntCogs(commands.Cog, name='Puzzlehunt'):
             embedSolved.add_field(name=f"{puzzleInfo[0]}: {puzzleInfo[1]}", value=f"[{puzzleInfo[2]}]({puzzleInfo[2]})", inline=False)
         if len(listSolved) == 0:
             emoji = '<:marisad:846587491480764436>'
-            embedSolved.add_field(name=f'{emoji}',value='Solve more puzzles')
+            embedSolved.add_field(name=f'{emoji}', value='Solve more puzzles')
         await ctx.send(embed=embedSolved)
+
+    @commands.command(hidden=True)
+    async def phelp(self, ctx):
+        embedPHelp = discord.Embed(title="Help", description='', colour=0xc566ed)
+        embedPHelp.add_field(name='!guess (puzzle number), (answer)', value='Guess the answer for the puzzle', inline=False)
+        embedPHelp.add_field(name='!phelp', value='Shows this embed', inline=False)
+        embedPHelp.add_field(name='!hint', value='Pings me', inline=False)
+        embedPHelp.add_field(name='!puzzles', value='Shows unlocked puzzles', inline=False)
+        embedPHelp.add_field(name='!solved', value='Shows solved puzzles', inline=False)
+        await ctx.send(embed=embedPHelp)
+
+    @commands.command(hidden=True)
+    async def hint(self, ctx):
+        await ctx.send("<@377794624540114944>")
+
 
 def setup(bot):
     bot.add_cog(PuzzleHuntCogs(bot))

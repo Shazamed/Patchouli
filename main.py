@@ -36,8 +36,6 @@ async def on_message(message):
         await message.channel.send('amogus')
     if message.content.lower() == 'cbt':
         await message.channel.send(fun.cbt())
-    if message.content.lower() == 'nice':
-        await message.channel.send('>:]')
     if message.content.lower().startswith('hmm'):
         emoji = '<a:thonking:831789205225996288>'
         await message.add_reaction(emoji)

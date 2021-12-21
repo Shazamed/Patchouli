@@ -5,6 +5,9 @@ from urllib.parse import quote
 import datetime
 import re
 import pandas
+from selenium import webdriver
+from selenium.webdriver.firefox.options import Options
+import time
 
 
 def a1z26(text):  # a1z26 cipher
@@ -505,5 +508,17 @@ def timer():
     return False
 
 
-
-
+def quipquip(text):
+    options = Options()
+    options.headless = True
+    driver = webdriver.Firefox(options=options)
+    driver.get("https://quipqiup.com/")
+    cipherbox = driver.find_element_by_id("ciphertext")
+    button = driver.find_element_by_id("solve_button")
+    cipherbox.clear()
+    cipherbox.send_keys(text)
+    button.click()
+    time.sleep(1)
+    finalText = driver.find_element_by_xpath('//*[@id="soltable"]/tbody/tr[1]/td[3]').text
+    driver.quit()
+    return finalText
