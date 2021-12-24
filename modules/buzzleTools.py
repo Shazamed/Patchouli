@@ -214,6 +214,7 @@ def calendar():
     res.raise_for_status()
     soup = bs4.BeautifulSoup(res.content, 'html.parser')
     idNum = 0
+    dateList = soup.find_all("div", {"class": "date"})
     for elements in range(3, 13):
         elemsTime = soup.select(f'body > div:nth-child({elements}) > div.date')
         elemsName = soup.select(f'body > div:nth-child({elements}) > span.title')
