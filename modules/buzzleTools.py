@@ -209,32 +209,22 @@ def nutrimatic(text):
 
 
 def calendar():
-    calendarList = ["http://puzzlehuntcalendar.com/"]
+    calendarStr = "http://puzzlehuntcalendar.com/"
     res = requests.get("http://puzzlehuntcalendar.com/")
     res.raise_for_status()
     soup = bs4.BeautifulSoup(res.content, 'html.parser')
-    idNum = 0
     dateList = soup.find_all("div", {"class": "date"})
-    for elements in range(3, 13):
-        elemsTime = soup.select(f'body > div:nth-child({elements}) > div.date')
-        elemsName = soup.select(f'body > div:nth-child({elements}) > span.title')
-        if idNum < 10:
-            elemsURL = soup.select(f'#\\3{str(idNum)}  > a')
+    titleList = soup.find_all("span", {"class": "title"})
+    desList = soup.find_all("div", {"class": "description"})
+
+    for num in range(0, min(len(dateList), 10)):
+        if desList[num].a is not None:
+            url = desList[num].a.text
+            calendarStr += f'\n**{titleList[num].text}**: {dateList[num].text}\n<{url}>'
         else:
-            elemsURL = soup.select(f'#\\3{str(idNum)[0]} {str(idNum)[1]} > a')
-        idNum += 1
-        while not elemsURL:
-            if idNum < 10:
-                elemsURL = soup.select(f'#\\3{str(idNum)}  > a')
-            else:
-                elemsURL = soup.select(f'#\\3{str(idNum)[0]} {str(idNum)[1]} > a')
-            idNum += 1
+            calendarStr += f'\n**{titleList[num].text}**: {dateList[num].text}'
+    return calendarStr
 
-
-        calendarList.append(
-            f'**{elemsName[0].text.strip()}**: {elemsTime[0].text.strip()}\n<{elemsURL[0].text.strip()}>')
-    calendarFinal = '\n'.join(calendarList)
-    return calendarFinal
 
 
 def hexadecimal(text):
@@ -403,7 +393,8 @@ def schedule_add(scheduled):
     elemsTime = soup.select(f'body > div:nth-child({int(scheduled) + 2}) > div.date')
     elemsName = soup.select(f'body > div:nth-child({int(scheduled) + 2}) > span.title')
     buzzleName = elemsName[0].text.strip()
-    buzzleTime = elemsTime[0].text.strip().split('-')[0]
+    buzzleFullTime = elemsTime[0].text.strip()
+    buzzleTime = buzzleFullTime.split('-')[0]
     elemsDes = soup.find_all('div', class_='description')
     idNum = elemsDes[int(scheduled) - 1].get('id')
     if int(idNum) < 10:
@@ -418,8 +409,8 @@ def schedule_add(scheduled):
             buzzleDateTime = datetime.datetime.strptime(buzzleTime[:-1], '%b %d %H:%M')
         else:
             buzzleDateTime = datetime.datetime.strptime(buzzleTime, '%b %d')
-        if len(buzzleTime.split()) == 3:
-            buzzleDateTime = buzzleDateTime.replace(year=int(buzzleTime.split()[2]))
+        if len(buzzleFullTime.split()) == 3:
+            buzzleDateTime = buzzleDateTime.replace(year=int(buzzleFullTime.split()[2]))
         else:
             buzzleDateTime = buzzleDateTime.replace(year=datetime.datetime.today().year)
         buzzleDateTime = buzzleDateTime + datetime.timedelta(hours=15)
@@ -464,11 +455,13 @@ def schedule_countdown():
     time_left = scheduled_time - time
     if time_left < datetime.timedelta(hours=0) and scheduled_end is not False:
         time_left = scheduled_end - time
-        scheduled_name2 = scheduleDF.iloc[1, 0]
-        scheduled_time2 = datetime.datetime.strptime(scheduleDF.iloc[1, 1], '%Y-%m-%d %H:%M:%S')
-        time_left2 = scheduled_time2 - time
-        strList.append(f'**Ongoing:**\nThe ongoing buzzle hunt, {scheduled_name}, ends in {time_left}, on {scheduled_end.strftime("%A, %b %d, at %H:%M:%S")}')
-        strList.append(f'**Next:**\nTime to the next buzzle hunt, {scheduled_name2}, is in {time_left2}, on {scheduled_time2.strftime("%A, %b %d, at %H:%M:%S")}')
+        strList.append(
+            f'**Ongoing:**\nThe ongoing buzzle hunt, {scheduled_name}, ends in {time_left}, on {scheduled_end.strftime("%A, %b %d, at %H:%M:%S")}')
+        if len(scheduleDF) > 1:
+            scheduled_name2 = scheduleDF.iloc[1, 0]
+            scheduled_time2 = datetime.datetime.strptime(scheduleDF.iloc[1, 1], '%Y-%m-%d %H:%M:%S')
+            time_left2 = scheduled_time2 - time
+            strList.append(f'**Next:**\nTime to the next buzzle hunt, {scheduled_name2}, is in {time_left2}, on {scheduled_time2.strftime("%A, %b %d, at %H:%M:%S")}')
         return '\n'.join(strList)
     else:
         return f'Time to the next buzzle hunt, {scheduled_name}, is in {time_left}, on {scheduled_time.strftime("%A, %b %d, at %H:%M:%S")}'

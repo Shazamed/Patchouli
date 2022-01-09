@@ -5,7 +5,7 @@ from modules import bad_apple as ba, fun_commands as fun
 import discord
 
 
-class FunCogs(commands.Cog, name='Misc'):
+class FunCog(commands.Cog, name='Misc'):
     def __init__(self, bot):
         self.bot = bot
 
@@ -126,4 +126,4 @@ class FunCogs(commands.Cog, name='Misc'):
 
 
 def setup(bot):
-    bot.add_cog(FunCogs(bot))
+    bot.add_cog(FunCog(bot))

@@ -2,7 +2,7 @@ from discord.ext import commands
 from modules import puzzlehunt
 import discord
 
-class PuzzleHuntCogs(commands.Cog, name='Puzzlehunt'):
+class PuzzleHuntCog(commands.Cog, name='Puzzlehunt'):
     def __init__(self, bot):
         self.bot = bot
 
@@ -51,4 +51,4 @@ class PuzzleHuntCogs(commands.Cog, name='Puzzlehunt'):
 
 
 def setup(bot):
-    bot.add_cog(PuzzleHuntCogs(bot))
+    bot.add_cog(PuzzleHuntCog(bot))

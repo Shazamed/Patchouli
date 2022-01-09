@@ -4,7 +4,7 @@ import discord
 
 
 
-class buzzleCogs(commands.Cog, name='Buzzle'):
+class BuzzleCog(commands.Cog, name='Buzzle'):
     def __init__(self, bot):
         self.bot = bot
 
@@ -172,4 +172,4 @@ class buzzleCogs(commands.Cog, name='Buzzle'):
 
 
 def setup(bot):
-    bot.add_cog(buzzleCogs(bot))
+    bot.add_cog(BuzzleCog(bot))

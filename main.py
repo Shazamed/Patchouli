@@ -9,19 +9,22 @@ from dotenv import load_dotenv
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 
-initial_extensions = ['cogs.buzzle', 'cogs.fun', 'cogs.puzzlehuntCog']
+initial_extensions = ['cogs.buzzle', 'cogs.fun', 'cogs.puzzlehuntCog', 'cogs.music']
 
 bot = commands.Bot(command_prefix='!')
 
-if __name__ == '__main__':
-    for extension in initial_extensions:
-        bot.load_extension(extension)
-    bot.help_command.cog = bot.cogs["Misc"]
+# if __name__ == '__main__':
+#     for extension in initial_extensions:
+#         bot.load_extension(extension)
+#     bot.help_command.cog = bot.cogs["Misc"]
 
 
 @bot.event
 async def on_ready():
     print('We have logged in as {0.user}'.format(bot))
+    for extension in initial_extensions:
+        bot.load_extension(extension)
+    bot.help_command.cog = bot.cogs["Misc"]
     await bot.change_presence(activity=discord.Game(name="東方Project | !help"))
 
 
@@ -58,6 +61,7 @@ async def on_message(message):
     if message.content.lower().startswith('pekoggers'):
         emoji = '<:pekoggers:844575409798250516>'
         await message.channel.send(emoji)
+
     if message.content.lower() in ['penis music', 'benis music', '🅱️enis music']:
         await message.channel.send('https://www.youtube.com/watch?v=c4KNd0Yv6d0')
         song_there = os.path.isfile("song.mp3")
@@ -85,7 +89,7 @@ async def on_message(message):
         for file in os.listdir("./"):
             if file.endswith(".mp3"):
                 os.rename(file, "song.mp3")
-        voice.play(discord.FFmpegPCMAudio("song.mp3"))
+        voice.play(discord.FFmpegPCMAudio("./song.mp3"))
 
     await bot.process_commands(message)
 
