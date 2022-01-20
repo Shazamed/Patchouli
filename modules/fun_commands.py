@@ -5,7 +5,12 @@ import praw
 from selenium import webdriver
 from selenium.webdriver.firefox.options import Options
 import selenium
+from dotenv import load_dotenv
+import os
 
+load_dotenv()
+REDDIT_TOKEN = os.getenv('REDDIT_SECRET')
+REDDIT_ID = os.getenv('REDDIT_ID')
 
 def stonks(text):
     stonksURL = f'https://www.marketwatch.com/investing/stock/{text}'
@@ -69,8 +74,8 @@ to a sated recipient. Many of these practices carry insignificant financial risk
 
 
 def reddit(subreddit, nsfw):
-    reddit = praw.Reddit(client_id="yjct9EtbhUP4FA",
-                         client_secret="yjjbIwlIjTNr2tmmbri-0F6GUL90JQ",
+    reddit = praw.Reddit(client_id=REDDIT_ID,
+                         client_secret=REDDIT_TOKEN,
                          user_agent="discord:patchouli:v1.0.0 (by u/DarthGL)",
                          check_for_async=False)
     if reddit.subreddit(subreddit).over18 is True and nsfw is False:

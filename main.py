@@ -22,10 +22,11 @@ bot = commands.Bot(command_prefix='!')
 @bot.event
 async def on_ready():
     print('We have logged in as {0.user}'.format(bot))
+    await bot.change_presence(activity=discord.Game(name="東方Project | !help"))
     for extension in initial_extensions:
         bot.load_extension(extension)
     bot.help_command.cog = bot.cogs["Misc"]
-    await bot.change_presence(activity=discord.Game(name="東方Project | !help"))
+
 
 
 @bot.event
