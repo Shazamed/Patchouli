@@ -41,10 +41,10 @@ class MusicCog(commands.Cog, name='Music'):
         player = self.bot.music.player_manager.get(ctx.guild.id)
         results = await player.node.get_tracks(query)
         if not results or not results['tracks']:
-            return await ctx.send('The archives are incomplete!')
+            return await ctx.send('Perhaps the archives are incomplete!')
         if search:
             tracks = results['tracks'][0:10]
-            embedSearch = discord.Embed(title='Select song', colour=0xc566ed)
+            embedSearch = discord.Embed(title='Select song by replying with integer of the choice', colour=0xc566ed)
             i = 0
             for track in tracks:
                 i += 1
@@ -72,8 +72,10 @@ class MusicCog(commands.Cog, name='Music'):
     @commands.command()
     async def stop(self, ctx):
         player = self.bot.music.player_manager.get(ctx.guild.id)
+        if player is None:
+            return await ctx.send("Use the !play command first")
         if not player.is_connected:
-            return await ctx.send("Not connected")
+            return await ctx.send("I'm not in a voice channel!")
         if not ctx.author.voice or (player.is_connected and ctx.author.voice.channel.id != int(player.channel_id)):
             return await ctx.send("You are not in my voice channel!")
         player.queue.clear()
@@ -81,8 +83,41 @@ class MusicCog(commands.Cog, name='Music'):
         await self.connect_channel(ctx.guild.id, None)
         await ctx.send('Disconnected')
 
+    @commands.command()
+    async def skip(self, ctx):
+        player = self.bot.music.player_manager.get(ctx.guild.id)
+        if player is None:
+            return await ctx.send("Use the !play command first")
+        if not player.is_connected:
+            return await ctx.send("I'm not in a voice channel!")
+        if not ctx.author.voice or (player.is_connected and ctx.author.voice.channel.id != int(player.channel_id)):
+            return await ctx.send("You are not in my voice channel!")
+        await player.skip()
+        await ctx.send("Skipping current song")
 
+    @commands.command()
+    async def shuffle(self, ctx):
+        player = self.bot.music.player_manager.get(ctx.guild.id)
+        if player is None:
+            return await ctx.send("Use the !play command first")
+        if not player.is_connected:
+            return await ctx.send("I'm not in a voice channel!")
+        if not ctx.author.voice or (player.is_connected and ctx.author.voice.channel.id != int(player.channel_id)):
+            return await ctx.send("You are not in my voice channel!")
+        player.set_shuffle(not player.shuffle)
+        await ctx.send(f"Shuffling {player.shuffle}")
 
+    @commands.command(alias=["repeat"])
+    async def loop(self, ctx):
+        player = self.bot.music.player_manager.get(ctx.guild.id)
+        if player is None:
+            return await ctx.send("Use the !play command first")
+        if not player.is_connected:
+            return await ctx.send("I'm not in a voice channel!")
+        if not ctx.author.voice or (player.is_connected and ctx.author.voice.channel.id != int(player.channel_id)):
+            return await ctx.send("You are not in my voice channel!")
+        player.set_repeat(not player.repeat)
+        await ctx.send(f"Looping {player.repeat}")
 
 
 def setup(bot):
