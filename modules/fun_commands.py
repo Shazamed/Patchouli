@@ -12,17 +12,16 @@ load_dotenv()
 REDDIT_TOKEN = os.getenv('REDDIT_SECRET')
 REDDIT_ID = os.getenv('REDDIT_ID')
 
-def stonks(text):
-    stonksURL = f'https://www.marketwatch.com/investing/stock/{text}'
+def stonks(ticker):
+    stonksURL = f'https://www.marketwatch.com/investing/stock/{ticker}'
     stonksList = [f'<{stonksURL}>']
     res = requests.get(stonksURL)
     res.raise_for_status()
     soup = bs4.BeautifulSoup(res.content, 'html.parser')
     elems1 = soup.select(
-        "body > div.container.container--body > div.region.region--intraday > div.column.column--aside > div > "
-        "div.intraday__data > h3 > bg-quote")
-    stonksList.append(f"\nThe price of {text.upper()} is ${elems1[0].text.strip()}")
-    if text.lower() == 'gme':
+        "#maincontent > div.region.region--intraday > div.column.column--aside > div > div.intraday__data > h2 > bg-quote")
+    stonksList.append(f"\nThe price of {ticker.upper()} is ${elems1[0].text.strip()}")
+    if ticker.lower() == 'gme':
         stonksList.append(':rocket: :rocket:')
     elems2 = soup.select('body > div.container.container--body > div.region.region--intraday > '
                          'div.column.column--aside > div > div.intraday__data > bg-quote > span.change--point--q > '
