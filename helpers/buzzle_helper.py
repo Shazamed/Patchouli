@@ -11,24 +11,24 @@ from selenium.webdriver.firefox.options import Options
 import time
 
 
-def a1z26(text):  # a1z26 cipher
-    a1z26List = []
+async def a1z26_e(text):  # a1z26 cipher
+    output_text = f"Encoding {text}:\n"
     if all(character.isalpha() or character.isspace() for character in text):  # if encoding
         for characterA1Z26 in text.upper():
             if characterA1Z26 == ' ':
-                a1z26List.append('/')
+                output_text += '/ '
             elif characterA1Z26 == '\n':
-                a1z26List.append('\n')
+                output_text += '\n'
             else:
-                a1z26List.append(str(ord(characterA1Z26) - 64))
-        a1z26final = ' '.join(a1z26List)
-    elif all(character.isdecimal() or character.isspace() for character in text):  # if decoding
+                output_text += str(ord(characterA1Z26) - 64).lower() + " "
+    return output_text
+
+async def a1z26_d(text):
+    output_text = f"Decoding {text}:\n"
+    if all(character.isdecimal() or character.isspace() for character in text):  # if decoding
         for numberA1Z26 in text.split():  # split the text by spaces
-            a1z26List.append(chr(((int(numberA1Z26) - 1) % 26 + 65)))  # a1z26 to ASCII then to char
-        a1z26final = ''.join(a1z26List)
-    else:
-        return 'Type only integers (decode) or alpha (encode)'
-    return a1z26final.lower()
+            output_text += chr(((int(numberA1Z26) - 1) % 26 + 65)).lower()  # a1z26 to ASCII then to char
+    return output_text
 
 
 def caesar(text):

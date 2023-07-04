@@ -3,6 +3,7 @@ from discord import app_commands
 from helpers import buzzle_helper as Buzzle
 import discord
 
+
 class BuzzleCog(commands.Cog, name='Buzzle'):
     def __init__(self, bot):
         self.bot = bot
@@ -42,18 +43,22 @@ class BuzzleCog(commands.Cog, name='Buzzle'):
             await self.bot.get_channel(826343308870680646).send(f"Buzzle end <@&905730976892715008>")  # spam
             await self.bot.get_channel(768448152826282019).send(f"Buzzle end <@&905750415629516801>")  # buzzle
 
-    @commands.command(brief='Checks the countdown to the next buzzle', aliases=['countdown'])
-    async def cd(self, ctx):
-        await ctx.send(Buzzle.schedule_countdown())
+    @app_commands.command(name='cd', description='Checks the countdown to the next buzzle')
+    async def cd(self, interaction: discord.Interaction):
+        await interaction.response.send_message(Buzzle.schedule_countdown())
 
-    @commands.command(brief='A1Z26 encoder/decoder', aliases=["az"])
-    async def a1z26(self, ctx, *, arg=None):
-        if not arg:
-            await ctx.send('Usage !a1z26 <text to decode/encode>')
-        else:
-            await ctx.send(Buzzle.a1z26(arg))
+    @app_commands.command(name='a1z26_encode', description='A1Z26 encoder, letters to numbers')
+    @app_commands.describe(text="Letters to numbers, separate by space")
+    async def a1z26_e(self, interaction, text: str):
+        await interaction.response.send_message(await Buzzle.a1z26_e(text))
 
-    @commands.command(brief='Caesar/ROT cipher', aliases=['rot', 'ROT'], description='d/e to shift left/right respectively')
+    @app_commands.command(name='a1z26_decode', description='A1Z26 decoder, numbers to letters')
+    @app_commands.describe(text="Numbers to letters, separate by space")
+    async def a1z26_d(self, interaction, text: str):
+        await interaction.response.send_message(await Buzzle.a1z26_d(text))
+
+    @commands.command(brief='Caesar/ROT cipher', aliases=['rot', 'ROT'],
+                      description='d/e to shift left/right respectively')
     async def caesar(self, ctx, *, arg=None):
         if not arg:
             await ctx.send("Usage: !caesar <e/d>, <text>, <shift number/'all'>")
@@ -95,12 +100,9 @@ class BuzzleCog(commands.Cog, name='Buzzle'):
         else:
             await ctx.send(Buzzle.freq(arg))
 
-    @commands.command(aliases=['nutrimatic'], brief='Searches the text on nutrimatic')
-    async def nut(self, ctx, *, arg=None):
-        if not arg:
-            await ctx.send("Usage: !nut <text>")
-        else:
-            await ctx.send(await Buzzle.nutrimatic(arg))
+    @app_commands.command(name='nut', description='Searches the text on nutrimatic')
+    async def nut(self, interaction: discord.Interaction, text: str):
+        await interaction.response.send_message(await Buzzle.nutrimatic(text))
 
     @commands.hybrid_command(aliases=['calendar'], brief='Puzzle hunt calender')
     async def cal(self, ctx):
@@ -175,9 +177,8 @@ class BuzzleCog(commands.Cog, name='Buzzle'):
 
     # @app_commands.command(name="command-1")
     # async def my_command(self, interaction: discord.Interaction) -> None:
-    #     """ /command-1 """
+    #     # """ /command-1 """
     #     await interaction.response.send_message("Hello from command 1!", ephemeral=True)
-
 
 
 async def setup(bot):
