@@ -1,6 +1,6 @@
 from discord.ext import commands, tasks
 from discord import app_commands
-from helpers import buzzleTools as Buzzle
+from helpers import buzzle_helper as Buzzle
 import discord
 
 
