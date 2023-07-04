@@ -1,7 +1,7 @@
 #! python3
 from discord.ext import commands
 import discord
-import youtube_dl
+# import youtube_dl
 import os
 from modules import fun_commands as fun
 from dotenv import load_dotenv
@@ -10,22 +10,30 @@ load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 
 initial_extensions = ['cogs.buzzle', 'cogs.fun', 'cogs.puzzlehuntCog', 'cogs.music']
-
-bot = commands.Bot(command_prefix='!')
+intents = discord.Intents.all()
+intents.members = True
+bot = commands.Bot(command_prefix='!', intents=intents)
 
 # if __name__ == '__main__':
 #     for extension in initial_extensions:
 #         bot.load_extension(extension)
 #     bot.help_command.cog = bot.cogs["Misc"]
 
+@bot.event
+async def setup_hook():
+    await bot.load_extension('cogs.fun')
+    await bot.load_extension('cogs.buzzle')
+    await bot.load_extension('cogs.puzzlehuntCog')
+
+    bot.help_command.cog = bot.cogs["Misc"]
+
 
 @bot.event
 async def on_ready():
     print('We have logged in as {0.user}'.format(bot))
     await bot.change_presence(activity=discord.Game(name="東方Project | !help"))
-    for extension in initial_extensions:
-        bot.load_extension(extension)
-    bot.help_command.cog = bot.cogs["Misc"]
+
+
 
 
 

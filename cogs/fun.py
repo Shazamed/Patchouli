@@ -80,7 +80,7 @@ class FunCog(commands.Cog, name='Misc'):
         else:
             await ctx.send('not sus?\n' + susText[2])
 
-    @commands.command(name='2hujerk', aliases=['2hu'], brief='Memes from r/2hujerk')
+    @commands.hybrid_command(name='2hujerk', aliases=['2hu'], brief='Memes from r/2hujerk')
     async def touhoujerk(self, ctx):
         if ctx.channel.is_nsfw():
             nsfw = True
@@ -125,5 +125,5 @@ class FunCog(commands.Cog, name='Misc'):
             await ctx.send("That is not a valid url")
 
 
-def setup(bot):
-    bot.add_cog(FunCog(bot))
+async def setup(bot):
+    await bot.add_cog(FunCog(bot))

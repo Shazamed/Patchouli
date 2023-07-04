@@ -120,5 +120,5 @@ class MusicCog(commands.Cog, name='Music'):
         await ctx.send(f"Looping {player.repeat}")
 
 
-def setup(bot):
-    bot.add_cog(MusicCog(bot))
+async def setup(bot):
+    await bot.add_cog(MusicCog(bot))

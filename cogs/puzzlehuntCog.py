@@ -50,5 +50,5 @@ class PuzzleHuntCog(commands.Cog, name='Puzzlehunt'):
         await ctx.send("<@377794624540114944>")
 
 
-def setup(bot):
-    bot.add_cog(PuzzleHuntCog(bot))
+async def setup(bot):
+    await bot.add_cog(PuzzleHuntCog(bot))

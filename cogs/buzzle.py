@@ -1,4 +1,5 @@
 from discord.ext import commands, tasks
+from discord import app_commands
 from modules import buzzleTools as Buzzle
 import discord
 
@@ -103,7 +104,7 @@ class BuzzleCog(commands.Cog, name='Buzzle'):
         else:
             await ctx.send(Buzzle.nutrimatic(arg))
 
-    @commands.command(aliases=['calendar'], brief='Puzzle hunt calender')
+    @commands.hybrid_command(aliases=['calendar'], brief='Puzzle hunt calender')
     async def cal(self, ctx):
         await ctx.send(Buzzle.calendar())
 
@@ -169,7 +170,17 @@ class BuzzleCog(commands.Cog, name='Buzzle'):
         else:
             await ctx.send(Buzzle.quipquip(arg))
 
+    @commands.command(hidden=True)
+    async def sync(self, ctx):
+        await ctx.bot.tree.sync()
+        await ctx.send("sync")
+
+    # @app_commands.command(name="command-1")
+    # async def my_command(self, interaction: discord.Interaction) -> None:
+    #     """ /command-1 """
+    #     await interaction.response.send_message("Hello from command 1!", ephemeral=True)
 
 
-def setup(bot):
-    bot.add_cog(BuzzleCog(bot))
+
+async def setup(bot):
+    await bot.add_cog(BuzzleCog(bot))
