@@ -1,7 +1,6 @@
 import bs4
 import requests
 import random
-import praw
 from selenium import webdriver
 from selenium.webdriver.firefox.options import Options
 import selenium
