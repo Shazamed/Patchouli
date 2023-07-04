@@ -1,7 +1,7 @@
 from discord.ext import commands
 import random
 import time
-from helpers import bad_apple_helper as ba, fun_helper as fun
+from helpers import bad_apple_helper as ba, fun_helper as fun, reddit_helper as reddit
 import discord
 
 
@@ -86,7 +86,7 @@ class FunCog(commands.Cog, name='Misc'):
             nsfw = True
         else:
             nsfw = False
-        await ctx.send(fun.reddit("2hujerk", nsfw))
+        await ctx.send(reddit.reddit("2hujerk", nsfw))
 
     @commands.command(aliases=['r'], brief='Search a random top 10 hot post from a subreddit')
     async def reddit(self, ctx, arg='all'):
@@ -94,7 +94,7 @@ class FunCog(commands.Cog, name='Misc'):
             nsfw = True
         else:
             nsfw = False
-        await ctx.send(f'Searching r/{arg}\n' + fun.reddit(arg, nsfw))
+        await ctx.send(f'Searching r/{arg}\n' + reddit.reddit(arg, nsfw))
 
     @commands.command(hidden=True)
     async def testemoji(self, ctx):

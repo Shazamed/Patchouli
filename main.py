@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 
-initial_extensions = ['cogs.buzzle', 'cogs.fun', 'cogs.puzzlehuntCog', 'cogs.music']
+initial_extensions = ['cogs.buzzle', 'cogs.fun', 'cogs.puzzlehunt', 'cogs.music']
 intents = discord.Intents.all()
 intents.members = True
 bot = commands.Bot(command_prefix='!', intents=intents)
@@ -23,7 +23,7 @@ bot = commands.Bot(command_prefix='!', intents=intents)
 async def setup_hook():
     await bot.load_extension('cogs.fun')
     await bot.load_extension('cogs.buzzle')
-    await bot.load_extension('cogs.puzzlehuntCog')
+    await bot.load_extension('cogs.puzzlehunt')
 
     bot.help_command.cog = bot.cogs["Misc"]
 

@@ -3,8 +3,6 @@ from discord import app_commands
 from helpers import buzzle_helper as Buzzle
 import discord
 
-
-
 class BuzzleCog(commands.Cog, name='Buzzle'):
     def __init__(self, bot):
         self.bot = bot
