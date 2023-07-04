@@ -3,7 +3,7 @@ from discord.ext import commands
 import discord
 # import youtube_dl
 import os
-from modules import fun_commands as fun
+from helpers import fun_commands as fun
 from dotenv import load_dotenv
 
 load_dotenv()

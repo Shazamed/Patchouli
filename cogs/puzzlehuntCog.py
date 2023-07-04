@@ -1,5 +1,5 @@
 from discord.ext import commands
-from modules import puzzlehunt
+from helpers import puzzlehunt
 import discord
 
 class PuzzleHuntCog(commands.Cog, name='Puzzlehunt'):
