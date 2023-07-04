@@ -100,7 +100,7 @@ class BuzzleCog(commands.Cog, name='Buzzle'):
         if not arg:
             await ctx.send("Usage: !nut <text>")
         else:
-            await ctx.send(Buzzle.nutrimatic(arg))
+            await ctx.send(await Buzzle.nutrimatic(arg))
 
     @commands.hybrid_command(aliases=['calendar'], brief='Puzzle hunt calender')
     async def cal(self, ctx):

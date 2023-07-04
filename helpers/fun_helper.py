@@ -6,6 +6,8 @@ from selenium.webdriver.firefox.options import Options
 import selenium
 from dotenv import load_dotenv
 import os
+import aiohttp
+import asyncio
 
 load_dotenv()
 REDDIT_TOKEN = os.getenv('REDDIT_SECRET')
@@ -83,3 +85,11 @@ def proxy(URL):
         return True
     except selenium.common.exceptions.InvalidArgumentException:
         return False
+
+
+async def http():
+    async with aiohttp.ClientSession() as session:
+        async with session.get('http://puzzlehuntcalendar.com/') as resp:
+            print(resp.status)
+            print(await resp.text())
+

@@ -1,5 +1,4 @@
 import base64
-
 import aiohttp
 import bs4
 import requests
@@ -185,28 +184,32 @@ def freq(text):
     return freqFinal
 
 
-def nutrimatic(text):
-    nutrimaticList = []
+async def nutrimatic(text):
+    # nutrimaticList = []
     text = quote(text)
-    nutrimaticURL = f'https://nutrimatic.org/?q={text}&go=Go'
-    nutrimaticList.append(nutrimaticURL)
-    res = requests.get(nutrimaticURL)
-    res.raise_for_status()
-    soup = bs4.BeautifulSoup(res.content, 'html.parser')
-    if len(soup.find_all('span')) == 0:
-        elemsError = soup.select('body > p > b > font')
-        nutrimaticList.append(elemsError[0].text.strip())
-    for elements in range(2, min(22, 2 * len(soup.find_all('span')) + 1), 2):
-        elems = soup.select(f'body > span:nth-child({elements})')
-        elemsFont = soup.find_all('span')[int(elements / 2 - 1)]
-        fontSize = elemsFont['style']
-        print(fontSize[11:-2])
-        if float(fontSize[11:-2]) > 2.5:
-            nutrimaticList.append('**' + elems[0].text.strip() + '**')
-        else:
-            nutrimaticList.append(elems[0].text.strip())
-    nutrimaticFinal = '\n'.join(nutrimaticList)
-    return nutrimaticFinal
+    nutrimatic_url = f'https://nutrimatic.org/?q={text}&go=Go'
+    output_text = nutrimatic_url
+    
+    # nutrimaticList.append(nutrimaticURL)
+    # res = requests.get(nutrimaticURL)
+    # res.raise_for_status()
+    async with aiohttp.ClientSession() as session:
+        async with session.get(nutrimatic_url) as resp:
+            content = await resp.text()
+            soup = bs4.BeautifulSoup(content, 'html.parser')
+            if len(soup.find_all('span')) == 0:
+                elems_error = soup.select('body > p > b > font')
+                output_text += f"\n{elems_error[0].text.strip()}"
+            for elements in range(2, min(22, 2 * len(soup.find_all('span')) + 1), 2):
+                elems = soup.select(f'body > span:nth-child({elements})')
+                elems_font = soup.find_all('span')[int(elements / 2 - 1)]
+                font_size = elems_font['style']
+                print(font_size[11:-2])
+                if float(font_size[11:-2]) > 2.5:
+                    output_text += '\n**' + elems[0].text.strip() + '**'
+                else:
+                    output_text += "\n" + elems[0].text.strip()
+    return output_text
 
 
 async def calendar():
@@ -217,10 +220,10 @@ async def calendar():
             if resp.status != 200:
                 return "Error retrieving info!"
             content = await resp.text()
-            soup = bs4.BeautifulSoup(content, 'html.parser')
-            date_list = soup.find_all("div", {"class": "date"})
-            title_list = soup.find_all("span", {"class": "title"})
-            desc_list = soup.find_all("div", {"class": "description"})
+    soup = bs4.BeautifulSoup(content, 'html.parser')
+    date_list = soup.find_all("div", {"class": "date"})
+    title_list = soup.find_all("span", {"class": "title"})
+    desc_list = soup.find_all("div", {"class": "description"})
 
     for num in range(0, min(len(date_list), 10)):
         if desc_list[num].a is not None:
@@ -315,15 +318,15 @@ async def qat(text):
             if resp.status != 200:
                 return "Error retrieving data"
             content = await resp.text()
-            soup = bs4.BeautifulSoup(content, 'html.parser')
-            elems = soup.find_all('div', class_="in")
-            results = elems[0].text.strip().split('Total solutions found:')[0]
-            regex_match = re.search(r'Length(.|\n)+', results)
-            if regex_match is None:
-                output_text += "\nNo results found."
-                return output_text
-            results = regex_match.group()
-            results = re.sub(r'Length (\d)+', r'**Length \1**', results)
+    soup = bs4.BeautifulSoup(content, 'html.parser')
+    elems = soup.find_all('div', class_="in")
+    results = elems[0].text.strip().split('Total solutions found:')[0]
+    regex_match = re.search(r'Length(.|\n)+', results)
+    if regex_match is None:
+        output_text += "\nNo results found."
+        return output_text
+    results = regex_match.group()
+    results = re.sub(r'Length (\d)+', r'**Length \1**', results)
     output_text += f'\n{results}'
     return output_text
 
