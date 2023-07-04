@@ -7,6 +7,7 @@ load_dotenv()
 REDDIT_TOKEN = os.getenv('REDDIT_SECRET')
 REDDIT_ID = os.getenv('REDDIT_ID')
 
+
 def reddit(subreddit, nsfw):
     reddit = praw.Reddit(client_id=REDDIT_ID,
                          client_secret=REDDIT_TOKEN,

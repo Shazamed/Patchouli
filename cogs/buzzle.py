@@ -104,7 +104,7 @@ class BuzzleCog(commands.Cog, name='Buzzle'):
 
     @commands.hybrid_command(aliases=['calendar'], brief='Puzzle hunt calender')
     async def cal(self, ctx):
-        await ctx.send(Buzzle.calendar())
+        await ctx.send(await Buzzle.calendar())
 
     @commands.command(name='hex', aliases=['hexadecimal'], brief='Hexadecimal to decimal encoder/decoder')
     async def hexadecimal(self, ctx, *, arg=None):
@@ -139,7 +139,7 @@ class BuzzleCog(commands.Cog, name='Buzzle'):
         if arg is None:
             await ctx.send("usage: !qat <text>")
         else:
-            await ctx.send(Buzzle.qat(arg)[:2000])
+            await ctx.send((await Buzzle.qat(arg))[:2000])
 
     @commands.command(brief="Multitap phone cipher encoder/decoder", aliases=["multitap", "keypad", "multi"])
     async def phone(self, ctx, *, arg=None):

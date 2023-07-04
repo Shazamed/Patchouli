@@ -1,4 +1,6 @@
 import base64
+
+import aiohttp
 import bs4
 import requests
 from urllib.parse import quote
@@ -23,7 +25,6 @@ def a1z26(text):  # a1z26 cipher
         a1z26final = ' '.join(a1z26List)
     elif all(character.isdecimal() or character.isspace() for character in text):  # if decoding
         for numberA1Z26 in text.split():  # split the text by spaces
-            #a1z26List.append(chr(((int(numberA1Z26) - 1) + 944)))
             a1z26List.append(chr(((int(numberA1Z26) - 1) % 26 + 65)))  # a1z26 to ASCII then to char
         a1z26final = ''.join(a1z26List)
     else:
@@ -208,22 +209,26 @@ def nutrimatic(text):
     return nutrimaticFinal
 
 
-def calendar():
-    calendarStr = "http://puzzlehuntcalendar.com/"
-    res = requests.get("http://puzzlehuntcalendar.com/")
-    res.raise_for_status()
-    soup = bs4.BeautifulSoup(res.content, 'html.parser')
-    dateList = soup.find_all("div", {"class": "date"})
-    titleList = soup.find_all("span", {"class": "title"})
-    desList = soup.find_all("div", {"class": "description"})
+async def calendar():
+    cal_url = "http://puzzlehuntcalendar.com/"
+    output_text = cal_url
+    async with aiohttp.ClientSession() as session:
+        async with session.get(cal_url) as resp:
+            if resp.status != 200:
+                return "Error retrieving info!"
+            content = await resp.text()
+            soup = bs4.BeautifulSoup(content, 'html.parser')
+            date_list = soup.find_all("div", {"class": "date"})
+            title_list = soup.find_all("span", {"class": "title"})
+            desc_list = soup.find_all("div", {"class": "description"})
 
-    for num in range(0, min(len(dateList), 10)):
-        if desList[num].a is not None:
-            url = desList[num].a.text
-            calendarStr += f'\n**{titleList[num].text}**: {dateList[num].text}\n<{url}>'
+    for num in range(0, min(len(date_list), 10)):
+        if desc_list[num].a is not None:
+            site_url = desc_list[num].a['href']
+            output_text += f'\n**{title_list[num].text}**: {date_list[num].text}\n<{site_url}>'
         else:
-            calendarStr += f'\n**{titleList[num].text}**: {dateList[num].text}'
-    return calendarStr
+            output_text += f'\n**{title_list[num].text}**: {date_list[num].text}'
+    return output_text
 
 
 
@@ -301,22 +306,26 @@ def atbash(text):
     return atbashFinal
 
 
-def qat(text):
+async def qat(text):
     text = quote(text)
-    qatURL = f"https://www.quinapalus.com/cgi-bin/qat?pat={text}&ent=Search&dict=0"
-    qatList = [f"<{qatURL}>"]
-    res = requests.get(qatURL)
-    res.raise_for_status()
-    soup = bs4.BeautifulSoup(res.content, 'html.parser')
-    elems = soup.find_all('div', class_="in")
-    results = elems[0].text.strip()[132:].split('Total solutions found:')[0]
-    results = results.replace('Length', '**Length')
-    for word in results.split():
-        if word.isdigit():
-            results = results.replace(f'{word}', f'{word}**', 1)
-    qatList.append(results)
-    qatFinal = '\n'.join(qatList)
-    return qatFinal
+    qat_url = f"https://www.quinapalus.com/cgi-bin/qat?pat={text}&ent=Search&dict=0"
+    output_text = qat_url
+    async with aiohttp.ClientSession() as session:
+        async with session.get(qat_url) as resp:
+            if resp.status != 200:
+                return "Error retrieving data"
+            content = await resp.text()
+            soup = bs4.BeautifulSoup(content, 'html.parser')
+            elems = soup.find_all('div', class_="in")
+            results = elems[0].text.strip().split('Total solutions found:')[0]
+            regex_match = re.search(r'Length(.|\n)+', results)
+            if regex_match is None:
+                output_text += "\nNo results found."
+                return output_text
+            results = regex_match.group()
+            results = re.sub(r'Length (\d)+', r'**Length \1**', results)
+    output_text += f'\n{results}'
+    return output_text
 
 
 def multi_tap(text):
