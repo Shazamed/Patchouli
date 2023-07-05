@@ -133,41 +133,35 @@ def morse(text):
     return morseFinal
 
 
-def vigenere(text):
-    vigenereList = []
-    text = text.split(', ')
-    if len(text) == 3 and text[0] == 'e' and text[2].isalpha():
+async def vigenere(text, key, direction):
+    output_text = ""
+    if direction == 'e' and key.isalpha():
         direction = 1  # direction = 1 for encoding and -1 for decoding
-    elif len(text) == 3 and text[0] == 'd' and text[2].isalpha():
+    elif direction == 'd' and key.isalpha():
         direction = -1  # direction = 1 for encoding and -1 for decoding
     else:
         return 'Something is wrong with the command arguments, use ", " to separate arguments'
-    string = text[1]
-    key = text[2]
     j = 0
-    for i in range(len(string)):
-        if string[i].isalpha():
-            vigenereList.append(
-                chr(((ord(string[i].upper()) - 65 + direction * ord(key[j % len(key)].upper()) - 65) % 26) + 65))
+    for i in range(len(text)):
+        if text[i].isalpha():
+            output_text += chr(((ord(text[i].upper()) - 65 + direction * ord(key[j % len(key)].upper()) - 65) % 26) + 65)
             j += 1
         else:
-            vigenereList.append(string[i])
-    vigenereFinal = ''.join(vigenereList)
-    return vigenereFinal
+            output_text += text[i]
+    return output_text
 
 
-def b64(text):
-    text = text.split(', ')
-    if len(text) == 2 and text[0] == 'e':
-        textBytes = text[1].encode()
-        textBase64Bytes = base64.b64encode(textBytes)
-        return textBase64Bytes.decode()
-    elif len(text) == 2 and text[0] == 'd':
-        textBase64Bytes = text[1].encode()
-        textBytes = base64.b64decode(textBase64Bytes)
-        return textBytes.decode()
+async def b64(text, direction):
+    if direction == 'e':
+        text_bytes = text.encode()
+        text_b64_bytes = base64.b64encode(text_bytes)
+        return text_b64_bytes.decode()
+    elif direction == 'd':
+        text_b64_bytes = text.encode()
+        text_bytes = base64.b64decode(text_b64_bytes)
+        return text_bytes.decode()
     else:
-        return 'Something is wrong with the command arguments, use ", " to separate arguments'
+        return 'Encoding/decoding not specified'
 
 
 def freq(text):
@@ -185,14 +179,9 @@ def freq(text):
 
 
 async def nutrimatic(text):
-    # nutrimaticList = []
     text = quote(text)
     nutrimatic_url = f'https://nutrimatic.org/?q={text}&go=Go'
     output_text = nutrimatic_url
-    
-    # nutrimaticList.append(nutrimaticURL)
-    # res = requests.get(nutrimaticURL)
-    # res.raise_for_status()
     async with aiohttp.ClientSession() as session:
         async with session.get(nutrimatic_url) as resp:
             content = await resp.text()

@@ -1,4 +1,6 @@
 from discord.ext import commands
+from discord import app_commands
+import asyncio
 import random
 import time
 from helpers import bad_apple_helper as ba, fun_helper as fun, reddit_helper as reddit
@@ -80,21 +82,29 @@ class FunCog(commands.Cog, name='Misc'):
         else:
             await ctx.send('not sus?\n' + susText[2])
 
-    @commands.hybrid_command(name='2hujerk', aliases=['2hu'], brief='Memes from r/2hujerk')
-    async def touhoujerk(self, ctx):
-        if ctx.channel.is_nsfw():
+    @app_commands.command(name='2hujerk', description='Random meme from r/2hujerk')
+    async def touhoujerk(self, interaction: discord.Interaction):
+        await interaction.response.defer()
+        if interaction.channel.is_nsfw():
             nsfw = True
         else:
             nsfw = False
-        await ctx.send(reddit.reddit("2hujerk", nsfw))
+        reddit_link = await reddit.reddit("2hujerk", nsfw)
+        await asyncio.sleep(5)
+        await interaction.followup.send(reddit_link)
 
-    @commands.command(aliases=['r'], brief='Search a random top 10 hot post from a subreddit')
-    async def reddit(self, ctx, arg='all'):
-        if ctx.channel.is_nsfw():
+
+    @app_commands.command(name='reddit', description='Search a random top 10 hot post from a subreddit')
+    async def reddit(self, interaction: discord.Interaction, subreddit: str):
+        await interaction.response.defer()
+        if interaction.channel.is_nsfw():
             nsfw = True
         else:
             nsfw = False
-        await ctx.send(f'Searching r/{arg}\n' + reddit.reddit(arg, nsfw))
+        reddit_link = f'Searching r/{subreddit}\n' + await reddit.reddit(subreddit, nsfw)
+
+        await asyncio.sleep(5)
+        await interaction.followup.send(reddit_link)
 
     @commands.command(hidden=True)
     async def testemoji(self, ctx):

@@ -57,13 +57,9 @@ class BuzzleCog(commands.Cog, name='Buzzle'):
     async def a1z26_d(self, interaction, text: str):
         await interaction.response.send_message(await Buzzle.a1z26_d(text))
 
-    @commands.command(brief='Caesar/ROT cipher', aliases=['rot', 'ROT'],
-                      description='d/e to shift left/right respectively')
-    async def caesar(self, ctx, *, arg=None):
-        if not arg:
-            await ctx.send("Usage: !caesar <e/d>, <text>, <shift number/'all'>")
-        else:
-            await ctx.send(Buzzle.caesar(arg))
+    @app_commands.command(name='rot', description='Caesar/ROT cipher')
+    async def caesar(self, interactions: discord.Interaction, text: str, shift: int):
+        await interactions.response.send_message(Buzzle.caesar(text, shift))
 
     @commands.command(brief='Int/Binary to ASCII encoder/decoder')
     async def ascii(self, ctx, *, arg=None):
@@ -79,19 +75,14 @@ class BuzzleCog(commands.Cog, name='Buzzle'):
         else:
             await ctx.send(Buzzle.morse(arg))
 
-    @commands.command(aliases=['v', 'vigenere'], brief='Vigenere cipher encoder/decoder')
-    async def vig(self, ctx, *, arg=None):
-        if not arg:
-            await ctx.send("Usage: !v <e/d>, <text>, <key>")
-        else:
-            await ctx.send(Buzzle.vigenere(arg))
+    @app_commands.command(name='vigenere', description='Vigenere cipher encoder/decoder, decoding is by default')
+    async def vig(self, interactions: discord.Interaction, text: str, key: str, direction: str):
+        await interactions.response.send_message(await Buzzle.vigenere(text, key, direction))
 
-    @commands.command(aliases=['base64'], brief='Base64 text encoder/decoder')
-    async def b64(self, ctx, *, arg=None):
-        if not arg:
-            await ctx.send("Usage: !b64 <e/d>, <text>")
-        else:
-            await ctx.send(Buzzle.b64(arg))
+    @app_commands.command(name='b64', description='Base64 text encoder/decoder, decoding is by default')
+    @app_commands.describe(direction="Type 'd' or 'e' for decoding and encoding respectively")
+    async def b64(self, interactions: discord.Interaction, text: str, direction: str="d"):
+        await interactions.response.send_message(await Buzzle.b64(text, direction))
 
     @commands.command(brief='Frequency analysis', aliases=['frequency'])
     async def freq(self, ctx, *, arg=None):
