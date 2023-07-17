@@ -9,6 +9,7 @@ import pandas
 from selenium import webdriver
 from selenium.webdriver.firefox.options import Options
 import time
+import dateutil
 
 
 async def a1z26_e(text):  # a1z26 cipher
@@ -31,76 +32,61 @@ async def a1z26_d(text):
     return output_text
 
 
-def caesar(text):
-    text = text.split(', ')
-    caesarList = []
-    if text[0] == 'e' and len(text) == 3:
-        if text[2].isdecimal():
-            for character in text[1].upper():
-                if 64 < ord(character) < 91:
-                    caesarList.append(chr((ord(character) + int(text[2]) - 65) % 26 + 65))  # caesar cipher formula
+def caesar(text, shift):
+    output_text = f"Shifting {text} by {shift}:"
+    if not (shift.isdecimal() or shift.lower() == "all"):
+        return "\nThere is something wrong with the shift value. Please only type in a number or 'all' in the shift " \
+               "field"
+    if shift.isdecimal():
+        output_text += "\n"
+        for char in text:
+            if 64 < ord(char) < 91 or 96 < ord(char) < 123:
+                if 64 < ord(char) < 91:
+                    base_index = 65
                 else:
-                    caesarList.append(character)
-        elif text[2].upper() == 'ALL':
-            for shiftAll in range(0, 26):
-                caesarList.append('ROT-' + str(shiftAll) + ': ')
-                for character in text[1].upper():
-                    if 64 < ord(character) < 91:
-                        caesarList.append(chr((ord(character) + int(shiftAll) - 65) % 26 + 65))
-                    else:
-                        caesarList.append(character)
-                caesarList.append('\n')
-        else:
-            return 'Something is wrong with the value of shift entered, type an integer or "all"'
-    elif text[0] == 'd' and len(text) == 3:
-        if text[2].isdecimal():
-            for character in text[1].upper():
-                if 64 < ord(character) < 91:
-                    caesarList.append(chr((ord(character) - int(text[2]) - 65) % 26 + 65))  # caesar cipher formula
-                else:
-                    caesarList.append(character)
-        elif text[2].upper() == 'ALL':
-            for shiftAll in range(0, 26):
-                caesarList.append('+' + str(shiftAll) + ': ')
-                for character in text[1].upper():
-                    if 64 < ord(character) < 91:
-                        caesarList.append(chr((ord(character) - int(shiftAll) - 65) % 26 + 65))
-                    else:
-                        caesarList.append(character)
-                caesarList.append('\n')
-        else:
-            return 'Something is wrong with the value of shift entered, type an integer or "all"'
+                    base_index = 97
+                output_text += chr((ord(char) + int(shift) - base_index) % 26 + base_index)
+            else:
+                output_text += char
     else:
-        return 'Something is wrong with the command arguments, use ", " to separate arguments'
-    caesarFinal = ''.join(caesarList)
-    return caesarFinal
+        for shift in range(0, 26):
+            output_text += f'\nROT-{shift}: '
+            for char in text:
+                if 64 < ord(char) < 91 or 96 < ord(char) < 123:
+                    if 64 < ord(char) < 91:
+                        base_index = 65
+                    else:
+                        base_index = 97
+                    output_text += chr((ord(char) + int(shift) - base_index) % 26 + base_index)
+                else:
+                    output_text += char
+    return output_text
 
 
-def ascii_decoder(text):
-    asciiList = []
+async def ascii_decoder(text):
+    output_text = ""
     if all(character.isdecimal() or character.isspace() for character in text):
         for number in text.split():
             if len(number) == 8 and all(character == '1' or character == '0' for character in number):
-                asciiList.append(chr(int(number, 2)))
+                output_text += chr(int(number, 2))
             else:
-                asciiList.append(chr(int(number)))
+                output_text += chr(int(number))
     elif text[0] == '+' and all(character.isalnum() or character.isspace() for character in text[1:]) and len(
             text) != 1:
         for number in text[1:].split():
-            asciiList.append(chr(int(number, 16)))
+            output_text += chr(int(number, 16))
     else:
         for character1 in text:
-            asciiList.append(str(ord(character1)) + ' ')
-        asciiList.append('\n')
+            output_text += ord(character1) + ' '
         for character2 in text:
-            asciiList.append('{0:08b} '.format(ord(character2)))
-    asciiFinal = ''.join(asciiList)
-    return asciiFinal
+            output_text = '{0:08b} '.format(ord(character2))
+
+    return output_text
 
 
-def morse(text):
-    morseList = []
-    morseDict = {
+async def morse(text):
+    output_text = ""
+    morse_dict = {
         "a": ".-", "b": "-...", "c": "-.-.",
         "d": "-..", "e": ".", "f": "..-.",
         "g": "--.", "h": "....", "i": "..",
@@ -118,29 +104,31 @@ def morse(text):
     text = text.replace('/', ' ')
     if all(character in ['.', '-', ' ', '/'] for character in text):
         for sequence in text.split():
-            for characterMorse, sequenceMorse in morseDict.items():
-                if sequenceMorse == sequence:
-                    morseList.append(characterMorse.upper())
-        morseFinal = ''.join(morseList)
+            for morse_char, morse_sequence in morse_dict.items():
+                if morse_sequence == sequence:
+                    output_text += morse_char.upper()
+
     elif all(character.isalnum() or character.isspace() for character in text):
-        for characterMorse in text.lower():
-            if morseDict.get(characterMorse) is not None:
-                morseList.append(morseDict.get(characterMorse))
-        morseFinal = '  '.join(morseList)
+        for morse_char in text.lower():
+            if morse_dict.get(morse_char) is not None:
+                output_text += morse_dict.get(morse_char) +"\t"
     else:
         return "Type alpha or morse sequence in text only"
 
-    return morseFinal
+    return output_text
 
 
 async def vigenere(text, key, direction):
     output_text = ""
     if direction == 'e' and key.isalpha():
         direction = 1  # direction = 1 for encoding and -1 for decoding
+        output_text += "Encoding "
     elif direction == 'd' and key.isalpha():
         direction = -1  # direction = 1 for encoding and -1 for decoding
+        output_text += "Decoding "
     else:
         return 'Something is wrong with the command arguments, use ", " to separate arguments'
+    output_text += f"text: '{text}' with key: '{key}'\n"
     j = 0
     for i in range(len(text)):
         if text[i].isalpha():
@@ -164,18 +152,18 @@ async def b64(text, direction):
         return 'Encoding/decoding not specified'
 
 
-def freq(text):
-    freqDict = {}
-    freqList = []
+async def freq(text):
+    freq_dict = {}
+    freq_list = []
     for character in text.upper():
-        freqDict.setdefault(character, 0)
-        freqDict[character] += 1
-    freqDict.pop('\n', None)
-    for characterType, characterCount in freqDict.items():
-        freqList.append(f'"{characterType}": {characterCount}')
-    freqList.sort()
-    freqFinal = '\n'.join(freqList)
-    return freqFinal
+        freq_dict.setdefault(character, 0)
+        freq_dict[character] += 1
+    freq_dict.pop('\n', None)
+    for characterType, characterCount in freq_dict.items():
+        freq_list.append(f'"{characterType}": {characterCount}')
+    freq_list.sort()
+    output_text = '\n'.join(freq_list)
+    return output_text
 
 
 async def nutrimatic(text):
@@ -242,7 +230,7 @@ def hexadecimal(text):
     return hexFinal
 
 
-def reverse(text):
+async def reverse(text):
     return text[::-1]
 
 
@@ -320,7 +308,7 @@ async def qat(text):
     return output_text
 
 
-def multi_tap(text):
+def multi_tap(text, ):
     phoneList = []
     phoneDict = {
         'a': '2', 'b': '22', 'c': '222',
@@ -349,135 +337,134 @@ def multi_tap(text):
         return phoneFinal
 
 
-def schedule_search(month, day, link):
-    timezones = {'PDT': 15, 'EST': 13, 'EDT': 12}
-    regex = fr'({month}[a-zA-Z]*|{day}) ({day}|{month}[a-zA-Z]*),? 202\d,? (at )?\d?\d:\d\d (p|a).?m.? [a-zA-Z](s|d|m)T(\+\d)?'
-    res = requests.get(link)
-    res.raise_for_status()
-    buzzleMatch = re.search(regex, res.text, re.IGNORECASE)
-    if buzzleMatch is None:
-        return None
-    buzzleTimeStr = buzzleMatch.group()
-    buzzleTimeStr = buzzleTimeStr.replace(',', '')
-    buzzleTime = datetime.datetime.strptime(' '.join(buzzleTimeStr.split()[:-2]), '%B %d %Y at %H:%M')
-    buzzleTimeZone = buzzleTimeStr.split()[-1].upper()
-    if (buzzleTimeStr.split()[-2].lower() == 'pm' or buzzleTimeStr.split()[-2].lower() == 'p.m.') and buzzleTime.hour != 12:
-        buzzleTime = buzzleTime + datetime.timedelta(hours=12)
-    elif (buzzleTimeStr.split()[-2].lower() == 'am' or buzzleTimeStr.split()[-2].lower() == 'a.m.') and buzzleTime.hour == 12:
-        buzzleTime = buzzleTime - datetime.timedelta(hours=12)
-    if buzzleTimeZone in timezones:
-        buzzleTime = buzzleTime + datetime.timedelta(hours=timezones.get(buzzleTimeZone))
-    elif buzzleTimeZone.startswith('GMT'):
-        if buzzleTimeZone[-2] == '+':
-            buzzleTime = buzzleTime + datetime.timedelta(hours=8 - int(buzzleTimeZone[-1]))
-        else:
-            buzzleTime = buzzleTime + datetime.timedelta(hours=8 + int(buzzleTimeZone[-1]))
-    return buzzleTime
+# def schedule_search(month, day, link):
+#     timezones = {'PDT': 15, 'EST': 13, 'EDT': 12}
+#     regex = fr'({month}[a-zA-Z]*|{day}) ({day}|{month}[a-zA-Z]*),? 202\d,? at \d?\d:\d\d (p|a).?m.? [a-zA-Z](s|d|m)T(\+\d)?'
+#     res = requests.get(link)
+#     res.raise_for_status()
+#     buzzleMatch = re.search(regex, res.text, re.IGNORECASE)
+#     if buzzleMatch is None:
+#         return None
+#     buzzle_startStr = buzzleMatch.group()
+#     buzzle_startStr = buzzle_startStr.replace(',', '')
+#     buzzle_start = datetime.datetime.strptime(' '.join(buzzle_startStr.split()[:-2]), '%B %d %Y at %H:%M')
+#
+#     buzzle_startZone = buzzle_startStr.split()[-1].upper()
+#     if (buzzle_startStr.split()[-2].lower() == 'pm' or buzzle_startStr.split()[-2].lower() == 'p.m.') and buzzle_start.hour != 12:
+#         buzzle_start = buzzle_start + datetime.timedelta(hours=12)
+#     elif (buzzle_startStr.split()[-2].lower() == 'am' or buzzle_startStr.split()[-2].lower() == 'a.m.') and buzzle_start.hour == 12:
+#         buzzle_start = buzzle_start - datetime.timedelta(hours=12)
+#     if buzzle_startZone in timezones:
+#         buzzle_start = buzzle_start + datetime.timedelta(hours=timezones.get(buzzle_startZone))
+#     elif buzzle_startZone.startswith('GMT'):
+#         if buzzle_startZone[-2] == '+':
+#             buzzle_start = buzzle_start + datetime.timedelta(hours=8 - int(buzzle_startZone[-1]))
+#         else:
+#             buzzle_start = buzzle_start + datetime.timedelta(hours=8 + int(buzzle_startZone[-1]))
+#     return buzzle_start
 
 
-def schedule_read():
-    scheduleStrList = ["Schedule:"]
-    scheduleDF = pandas.read_csv('./data/schedule.csv', parse_dates=['Start date'])
-    scheduleDF = scheduleDF.sort_values(by='Start date')
-    for x in range(0, len(scheduleDF)):
-        scheduleStrList.append(f'**{scheduleDF.iloc[x,0]}**: {scheduleDF.iloc[x,1]} to {scheduleDF.iloc[x,2]}')
-    scheduleFinal = '\n'.join(scheduleStrList)
-    return scheduleFinal
+async def schedule_read():
+    output_text = ""
+    schedule_df = pandas.read_csv('./data/schedule.csv', parse_dates=['Start date'])
+    schedule_df = schedule_df.sort_values(by='Start date')
+    for x in range(0, len(schedule_df)):
+        start_date_epoch = int(schedule_df.iloc[x, 1].to_pydatetime().timestamp())
+        try:
+            end_date_epoch = int(dateutil.parser.parse(schedule_df.iloc[x, 2]).timestamp())
+            output_text += f'\n**{schedule_df.iloc[x, 0]}**: <t:{start_date_epoch}> to <t:{end_date_epoch}>'
+        except:
+            output_text += f'\n**{schedule_df.iloc[x, 0]}**: <t:{start_date_epoch}> to {schedule_df.iloc[x, 2]}'
+    return output_text
 
 
-def schedule_add(scheduled):
-    scheduleStrList = ['Schedule:']
-    calURL = 'http://puzzlehuntcalendar.com/'
-    res = requests.get(calURL)
+async def schedule_add(scheduled):
+    output_text = ""
+    cal_url = 'http://puzzlehuntcalendar.com/'
+    res = requests.get(cal_url)
     res.raise_for_status()
     soup = bs4.BeautifulSoup(res.content, 'html.parser')
-    elemsTime = soup.select(f'body > div:nth-child({int(scheduled) + 2}) > div.date')
-    elemsName = soup.select(f'body > div:nth-child({int(scheduled) + 2}) > span.title')
-    buzzleName = elemsName[0].text.strip()
-    buzzleFullTime = elemsTime[0].text.strip()
-    buzzleTime = buzzleFullTime.split('-')[0]
-    elemsDes = soup.find_all('div', class_='description')
-    idNum = elemsDes[int(scheduled) - 1].get('id')
-    if int(idNum) < 10:
-        buzzleURL = soup.select(f'#\\3{idNum}  > a')[0].text.strip()
+    time_elem = soup.select(f'body > div:nth-child({int(scheduled) + 2}) > div.date')
+    name_elem = soup.select(f'body > div:nth-child({int(scheduled) + 2}) > span.title')
+    if not name_elem:
+        return "Range of index is out of bounds!"
+    buzzle_name = name_elem[0].text.strip()
+    buzzle_time_text = time_elem[0].text.strip()
+    time_split = buzzle_time_text.removesuffix(" (recurring)").split("-")
+    buzzle_start_datetime = dateutil.parser.parse(time_split[0])
+    if len(time_split) > 1:
+        if time_split[1].isdecimal():
+            buzzle_end_datetime = dateutil.parser.parse(" ".join(buzzle_time_text.split(" ")[:-1])+" "+time_split[1])
+        else:
+            buzzle_end_datetime = dateutil.parser.parse(time_split[1])
     else:
-        buzzleURL = soup.select(f'#\\3{idNum[0]} {idNum[1]} > a')[0].text.strip()
-    buzzleMonth = buzzleTime.split()[0]
-    buzzleDay = buzzleTime.split()[1]
-    buzzleDateTime = schedule_search(buzzleMonth, buzzleDay, buzzleURL)
-    if buzzleDateTime is None:
-        if ':' in buzzleTime:
-            buzzleDateTime = datetime.datetime.strptime(buzzleTime[:-1], '%b %d %H:%M')
-        else:
-            buzzleDateTime = datetime.datetime.strptime(buzzleTime, '%b %d')
-        if len(buzzleFullTime.split()) == 3:
-            buzzleDateTime = buzzleDateTime.replace(year=int(buzzleFullTime.split()[2]))
-        else:
-            buzzleDateTime = buzzleDateTime.replace(year=datetime.datetime.today().year)
-        buzzleDateTime = buzzleDateTime + datetime.timedelta(hours=15)
-        if buzzleTime[-1] == 'p':
-            buzzleDateTime = buzzleDateTime + datetime.timedelta(hours=12)
-    scheduleDF = pandas.read_csv('./data/schedule.csv', parse_dates=['Start date'])
-    scheduleDF.loc[len(scheduleDF)] = [buzzleName, buzzleDateTime, '???']
-    scheduleDF.to_csv("./data/schedule.csv", index=False)
-    scheduleDF = scheduleDF.sort_values('Start date')
-    for x in range(0, len(scheduleDF.index)):
-        scheduleStrList.append(f'**{scheduleDF.iloc[x,0]}**: {scheduleDF.iloc[x,1]} to {scheduleDF.iloc[x,2]}')
-    scheduleFinal = '\n'.join(scheduleStrList)
-    return scheduleFinal
+        buzzle_end_datetime = '???'
+    
+    schedule_df = pandas.read_csv('./data/schedule.csv', parse_dates=['Start date'])
+    schedule_df.loc[len(schedule_df)] = [buzzle_name, buzzle_start_datetime, str(buzzle_end_datetime)]
+    schedule_df.to_csv("./data/schedule.csv", index=False)
+    schedule_df = schedule_df.sort_values('Start date')
+    for x in range(0, len(schedule_df)):
+        start_date_epoch = int(schedule_df.iloc[x, 1].to_pydatetime().timestamp())
+        try:
+            end_date_epoch = int(dateutil.parser.parse(schedule_df.iloc[x, 2]).timestamp())
+            output_text += f'\n**{schedule_df.iloc[x, 0]}**: <t:{start_date_epoch}> to <t:{end_date_epoch}>'
+        except:
+            output_text += f'\n**{schedule_df.iloc[x, 0]}**: <t:{start_date_epoch}> to {schedule_df.iloc[x, 2]}'
+    return output_text
 
 
-def schedule_remove():
-    scheduleStrList = ["Schedule:"]
-    scheduleDF = pandas.read_csv("./data/schedule.csv", parse_dates=['Start date'])
-    scheduleDF = scheduleDF[:-1]
-    scheduleDF.to_csv("./data/schedule.csv", index=False)
-    scheduleDF = scheduleDF.sort_values('Start date')
-    for x in range(0, len(scheduleDF)):
-        scheduleStrList.append(f'**{scheduleDF.iloc[x, 0]}**: {scheduleDF.iloc[x, 1]} to {scheduleDF.iloc[x, 2]}')
-    scheduleFinal = '\n'.join(scheduleStrList)
-    return scheduleFinal
+async def schedule_remove():
+    output_text = "Schedule:"
+    # schedule_str_list = ["Schedule:"]
+    schedule_df = pandas.read_csv("./data/schedule.csv", parse_dates=['Start date'])
+    schedule_df = schedule_df[:-1]
+    schedule_df.to_csv("./data/schedule.csv", index=False)
+    schedule_df = schedule_df.sort_values('Start date')
+    for x in range(0, len(schedule_df)):
+        start_date_epoch = int(schedule_df.iloc[x, 1].to_pydatetime().timestamp())
+        output_text += f'\n**{schedule_df.iloc[x, 0]}**: <t:{start_date_epoch}> to {schedule_df.iloc[x, 2]}'
+    return output_text
 
 
-def schedule_countdown():
-    strList = []
-    time = datetime.datetime.today().replace(microsecond=0)
-    scheduleDF = pandas.read_csv("./data/schedule.csv")
-    if len(scheduleDF) == 0:
-        return 'There are no buzzles scheduled. Use !sch [list number of !cal] to schedule a buzzle hunt'
-    scheduleDF = scheduleDF.sort_values("Start date")
-    scheduled_name = scheduleDF.iloc[0, 0]
-    scheduled_end = scheduleDF.iloc[0, 2]
-    scheduled_time = datetime.datetime.strptime(scheduleDF.iloc[0, 1], '%Y-%m-%d %H:%M:%S')
+async def schedule_countdown():
+    output_text = ""
+    time_now = int(datetime.datetime.today().replace(microsecond=0).timestamp())
+    schedule_df = pandas.read_csv("./data/schedule.csv")
+    if len(schedule_df) == 0:
+        return 'There are no buzzles scheduled. Use /sch-add [index of hunt from /cal] to schedule a buzzle hunt'
+    schedule_df = schedule_df.sort_values("Start date")
+    scheduled_name = schedule_df.iloc[0, 0]
+    scheduled_start = int(dateutil.parser.parse(schedule_df.iloc[0, 1]).timestamp())
+    scheduled_end = schedule_df.iloc[0, 2]
+    time_left = datetime.timedelta(seconds=scheduled_start - time_now)
     try:
-        scheduled_end = datetime.datetime.strptime(scheduled_end, '%Y-%m-%d %H:%M:%S')
+        scheduled_end = int(dateutil.parser.parse(scheduled_end).timestamp())
     except ValueError:
         scheduled_end = False
-    time_left = scheduled_time - time
-    if time_left < datetime.timedelta(hours=0) and scheduled_end is not False:
-        time_left = scheduled_end - time
-        strList.append(
-            f'**Ongoing:**\nThe ongoing buzzle hunt, {scheduled_name}, ends in {time_left}, on {scheduled_end.strftime("%A, %b %d, at %H:%M:%S")}')
-        if len(scheduleDF) > 1:
-            scheduled_name2 = scheduleDF.iloc[1, 0]
-            scheduled_time2 = datetime.datetime.strptime(scheduleDF.iloc[1, 1], '%Y-%m-%d %H:%M:%S')
-            time_left2 = scheduled_time2 - time
-            strList.append(f'**Next:**\nTime to the next buzzle hunt, {scheduled_name2}, is in {time_left2}, on {scheduled_time2.strftime("%A, %b %d, at %H:%M:%S")}')
-        return '\n'.join(strList)
+    if time_left < datetime.timedelta(seconds=0) and scheduled_end is not False:
+        # time_left = datetime.timedelta(seconds=scheduled_end - time_now)
+        output_text += f'\n**Ongoing:**\nThe ongoing buzzle hunt, **{scheduled_name}**, ends <t:{scheduled_end}:R>, on <t:{scheduled_end}:F>'
+        if len(schedule_df) > 1:
+            scheduled_name2 = schedule_df.iloc[1, 0]
+            scheduled_start2 = int(dateutil.parser.parse(schedule_df.iloc[1, 1]).timestamp())
+            # time_left2 = datetime.timedelta(seconds=scheduled_start2 - time_now)
+            output_text += f'\n**Next:**\nTime to the next buzzle hunt, **{scheduled_name2}**, is <t:{scheduled_start2}:R>, on <t:{scheduled_start2}:F>'
+        return output_text
     else:
-        return f'Time to the next buzzle hunt, {scheduled_name}, is in {time_left}, on {scheduled_time.strftime("%A, %b %d, at %H:%M:%S")}'
+        return f'Time to the next buzzle hunt, **{scheduled_name}**, is <t:{scheduled_start}:R>, on <t:{scheduled_start}:F>'
 
 
 def timer():
     time = datetime.datetime.today().replace(microsecond=0)
-    scheduleDF = pandas.read_csv("./data/schedule.csv")
-    if len(scheduleDF) == 0:
+    schedule_df = pandas.read_csv("./data/schedule.csv")
+    if len(schedule_df) == 0:
         return False
-    scheduleDF = scheduleDF.sort_values("Start date")
-    scheduled_time = scheduleDF.iloc[0, 1]
+    schedule_df = schedule_df.sort_values("Start date")
+    scheduled_time = schedule_df.iloc[0, 1]
     scheduled_time = datetime.datetime.strptime(scheduled_time, '%Y-%m-%d %H:%M:%S')
     timeTrue = time == scheduled_time
-    scheduled_end = scheduleDF.iloc[0, 2]
+    scheduled_end = schedule_df.iloc[0, 2]
     time_left = scheduled_time - time
     if timeTrue:
         return 'start'
@@ -488,18 +475,18 @@ def timer():
     except ValueError:
         scheduled_end = False
     if scheduled_end is False:
-        scheduleDF = scheduleDF.iloc[1:]
-        scheduleDF.to_csv("./data/schedule.csv", index=False)
+        schedule_df = schedule_df.iloc[1:]
+        schedule_df.to_csv("./data/schedule.csv", index=False)
     else:
         endTrue = time == scheduled_end
         time_end = scheduled_end - time
         if endTrue is True:
-            scheduleDF = scheduleDF.iloc[1:]
-            scheduleDF.to_csv("./data/schedule.csv", index=False)
+            schedule_df = schedule_df.iloc[1:]
+            schedule_df.to_csv("./data/schedule.csv", index=False)
             return 'end'
         elif time_end < datetime.timedelta(hours=0):
-            scheduleDF = scheduleDF.iloc[1:]
-            scheduleDF.to_csv("./data/schedule.csv", index=False)
+            schedule_df = schedule_df.iloc[1:]
+            schedule_df.to_csv("./data/schedule.csv", index=False)
     return False
 
 

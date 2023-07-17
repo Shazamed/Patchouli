@@ -1,3 +1,5 @@
+import asyncio
+
 from discord.ext import commands, tasks
 from discord import app_commands
 from helpers import buzzle_helper as Buzzle
@@ -45,7 +47,7 @@ class BuzzleCog(commands.Cog, name='Buzzle'):
 
     @app_commands.command(name='cd', description='Checks the countdown to the next buzzle')
     async def cd(self, interaction: discord.Interaction):
-        await interaction.response.send_message(Buzzle.schedule_countdown())
+        await interaction.response.send_message(await Buzzle.schedule_countdown())
 
     @app_commands.command(name='a1z26_encode', description='A1Z26 encoder, letters to numbers')
     @app_commands.describe(text="Letters to numbers, separate by space")
@@ -58,7 +60,7 @@ class BuzzleCog(commands.Cog, name='Buzzle'):
         await interaction.response.send_message(await Buzzle.a1z26_d(text))
 
     @app_commands.command(name='rot', description='Caesar/ROT cipher')
-    async def caesar(self, interactions: discord.Interaction, text: str, shift: int):
+    async def caesar(self, interactions: discord.Interaction, text: str, shift: str):
         await interactions.response.send_message(Buzzle.caesar(text, shift))
 
     @commands.command(brief='Int/Binary to ASCII encoder/decoder')
@@ -69,14 +71,11 @@ class BuzzleCog(commands.Cog, name='Buzzle'):
             await ctx.send(Buzzle.ascii_decoder(arg)[:2000])
 
     @commands.command(brief='Morse code encoder/decoder')
-    async def morse(self, ctx, *, arg=None):
-        if not arg:
-            await ctx.send("Usage: !morse <text or morse code sequence>")
-        else:
-            await ctx.send(Buzzle.morse(arg))
+    async def morse(self, interactions: discord.Interaction, text: str):
+        await interactions.response.send_message(await Buzzle.morse(text))
 
     @app_commands.command(name='vigenere', description='Vigenere cipher encoder/decoder, decoding is by default')
-    async def vig(self, interactions: discord.Interaction, text: str, key: str, direction: str):
+    async def vig(self, interactions: discord.Interaction, text: str, key: str, direction: str="d"):
         await interactions.response.send_message(await Buzzle.vigenere(text, key, direction))
 
     @app_commands.command(name='b64', description='Base64 text encoder/decoder, decoding is by default')
@@ -84,12 +83,9 @@ class BuzzleCog(commands.Cog, name='Buzzle'):
     async def b64(self, interactions: discord.Interaction, text: str, direction: str="d"):
         await interactions.response.send_message(await Buzzle.b64(text, direction))
 
-    @commands.command(brief='Frequency analysis', aliases=['frequency'])
-    async def freq(self, ctx, *, arg=None):
-        if not arg:
-            await ctx.send("Usage: !freq <text>")
-        else:
-            await ctx.send(Buzzle.freq(arg))
+    @app_commands.command(name='frequency', description='Frequency analysis')
+    async def freq(self, interaction: discord.Interaction, text: str):
+        await interaction.response.send_message(await Buzzle.freq(text))
 
     @app_commands.command(name='nut', description='Searches the text on nutrimatic')
     async def nut(self, interaction: discord.Interaction, text: str):
@@ -106,12 +102,9 @@ class BuzzleCog(commands.Cog, name='Buzzle'):
         else:
             await ctx.send(Buzzle.hexadecimal(arg))
 
-    @commands.command(brief='String reverser', aliases=['reverse'])
-    async def rev(self, ctx, *, arg=None):
-        if arg is None:
-            await ctx.send("Usage: !rev <text>")
-        else:
-            await ctx.send(Buzzle.reverse(arg))
+    @app_commands.command(name='rev', description='String reverser')
+    async def rev(self, interactions: discord.Interaction, text: str):
+        await interactions.response.send_message(await Buzzle.reverse(text))
 
     @commands.command(brief='Braille encoder/decoder')
     async def braille(self, ctx, *, arg=None):
@@ -127,32 +120,27 @@ class BuzzleCog(commands.Cog, name='Buzzle'):
         else:
             await ctx.send(Buzzle.atbash(arg))
 
-    @commands.command(brief='Searches the text on qat')
-    async def qat(self, ctx, *, arg=None):
-        if arg is None:
-            await ctx.send("usage: !qat <text>")
-        else:
-            await ctx.send((await Buzzle.qat(arg))[:2000])
+    @app_commands.command(name='qat', description='Searches the text on qat')
+    async def qat(self, interaction: discord.Interaction, text: str):
+        await interaction.response.defer()
+        await asyncio.sleep(5)
+        await interaction.followup.send((await Buzzle.qat(text))[:2000])
 
-    @commands.command(brief="Multitap phone cipher encoder/decoder", aliases=["multitap", "keypad", "multi"])
-    async def phone(self, ctx, *, arg=None):
-        if arg is None:
-            await ctx.send("Usage: !phone <keypad sequence or text>")
-        else:
-            await ctx.send(Buzzle.multi_tap(arg))
+    @app_commands.command(name="multitap",  description="Multitap phone cipher encoder/decoder, decoding is by default")
+    async def phone(self, interactions: discord.Interaction, text: str, direction: str):
+        await interactions.response.send_message(await Buzzle.multi_tap(text, direction))
 
-    @commands.command(aliases=['sch'], brief='Schedule a queue of upcoming buzzle hunt')
-    async def schedule(self, ctx, arg='c'):
-        if arg is None:
-            await ctx.send("Usage: !sch <list number on !cal or 'c' to check>")
-        elif arg == 'c':
-            await ctx.send(Buzzle.schedule_read())
-        else:
-            await ctx.send(Buzzle.schedule_add(arg))
+    @app_commands.command(name="sch-add", description='Add an upcoming buzzle hunt to the schedule')
+    async def schedule_add(self, interaction: discord.Interaction, index: int):
+        await interaction.response.send_message(await Buzzle.schedule_add(index))
 
-    @commands.command(brief='Remove the last added item on the schedule')
-    async def pop(self, ctx):
-        await ctx.send(Buzzle.schedule_remove())
+    @app_commands.command(name="sch-check", description="Check the buzzle hunt schedule")
+    async def schedule_check(self, interaction: discord.Interaction):
+        await interaction.response.send_message(await Buzzle.schedule_read())
+
+    @app_commands.command(name="sch-pop", description='Remove the last added item on the schedule')
+    async def pop(self, interaction: discord.Interaction):
+        await interaction.response.send_message(await Buzzle.schedule_remove())
 
     @commands.command(brief='Cryptogram solver by quipquip', aliases=['quipquip'])
     async def quip(self, ctx, *, arg=None):

@@ -15,9 +15,9 @@ async def reddit(subreddit, nsfw):
                          check_for_async=False)
     if reddit.subreddit(subreddit).over18 is True and nsfw is False:
         return 'This is not a NSFW channel!\nBonk! Go to horny jail'
-    submissionList = reddit.subreddit(subreddit).hot()
-    submission = submissionList
+    submission_list = reddit.subreddit(subreddit).hot()
+    submission = submission_list
     limit = random.randint(1, 10)
     for i in range(0, limit):
-        submission = next(x for x in submissionList if not x.stickied)
+        submission = next(x for x in submission_list if not x.stickied)
     return submission.title + '\n' + submission.url

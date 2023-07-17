@@ -134,9 +134,6 @@ class FunCog(commands.Cog, name='Misc'):
         else:
             await ctx.send("That is not a valid url")
 
-    @commands.command()
-    async def http(self, ctx):
-        await fun.http()
 
 async def setup(bot):
     await bot.add_cog(FunCog(bot))
