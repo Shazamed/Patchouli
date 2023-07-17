@@ -11,12 +11,9 @@ class FunCog(commands.Cog, name='Misc'):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(aliases=['stocks', 'stock', '$', 'stonk'], brief='Check stonks price')
-    async def stonks(self, ctx, arg=None):
-        if arg is None:
-            await ctx.send("Usage: !stonks <ticker>")
-        else:
-            await ctx.send(fun.stonks(arg))
+    @app_commands.command(name="stonks", description='Check stonks price')
+    async def stonks(self, interaction: discord.Interaction, ticker: str):
+        await interaction.response.send_message(await fun.stonks(ticker))
 
     @commands.command(brief='fumofumo', description='fumofumo')
     async def fumo(self, ctx):

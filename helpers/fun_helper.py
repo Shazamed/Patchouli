@@ -1,5 +1,4 @@
 import bs4
-import requests
 import random
 from selenium import webdriver
 from selenium.webdriver.firefox.options import Options
@@ -7,36 +6,35 @@ import selenium
 from dotenv import load_dotenv
 import os
 import aiohttp
-import asyncio
 
 load_dotenv()
 REDDIT_TOKEN = os.getenv('REDDIT_SECRET')
 REDDIT_ID = os.getenv('REDDIT_ID')
 
-def stonks(ticker):
-    stonksURL = f'https://www.marketwatch.com/investing/stock/{ticker}'
-    stonksList = [f'<{stonksURL}>']
-    res = requests.get(stonksURL)
-    res.raise_for_status()
-    soup = bs4.BeautifulSoup(res.content, 'html.parser')
+async def stonks(ticker):
+    stonks_url = f'https://www.marketwatch.com/investing/stock/{ticker}'
+    output_text = f'<{stonks_url}>'
+    async with aiohttp.ClientSession() as session:
+        async with session.get((stonks_url)) as resp:
+            content = await resp.text()
+    soup = bs4.BeautifulSoup(content, 'html.parser')
     elems1 = soup.select(
         "#maincontent > div.region.region--intraday > div.column.column--aside > div > div.intraday__data > h2 > bg-quote")
-    stonksList.append(f"\nThe price of {ticker.upper()} is ${elems1[0].text.strip()}")
+    output_text += f"\nThe price of {ticker.upper()} is ${elems1[0].text.strip()}"
     if ticker.lower() == 'gme':
-        stonksList.append(':rocket: :rocket:')
+        output_text += ':rocket: :rocket:'
     elems2 = soup.select('body > div.container.container--body > div.region.region--intraday > '
                          'div.column.column--aside > div > div.intraday__data > bg-quote > span.change--point--q > '
                          'bg-quote')
     elems3 = soup.select('body > div.container.container--body > div.region.region--intraday > '
                          'div.column.column--aside > div > div.intraday__data > bg-quote > span.change--percent--q > '
                          'bg-quote')
-    stonksList.append(f'\n{elems2[0].text.strip()}  {elems3[0].text.strip()} ')
+    output_text += f'\n{elems2[0].text.strip()}  {elems3[0].text.strip()} '
     if elems3[0].text.strip()[0] == '-':
-        stonksList.append(':chart_with_downwards_trend:')
+        output_text += ':chart_with_downwards_trend:'
     else:
-        stonksList.append(':chart_with_upwards_trend:')
-    stonksFinal = ''.join(stonksList)
-    return stonksFinal
+        output_text += ':chart_with_upwards_trend:'
+    return output_text
 
 
 def cbt():
