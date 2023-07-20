@@ -21,9 +21,12 @@ bot = commands.Bot(command_prefix='!', intents=intents)
 
 @bot.event
 async def setup_hook():
-    await bot.load_extension('cogs.fun')
-    await bot.load_extension('cogs.buzzle')
-    await bot.load_extension('cogs.puzzlehunt')
+    for extension_cog in initial_extensions:
+        await bot.load_extension(extension_cog)
+    # await bot.load_extension('cogs.fun')
+    # await bot.load_extension('cogs.buzzle')
+    # await bot.load_extension('cogs.puzzlehunt')
+    # await bot.load_extension('cogs.music')
 
     bot.help_command.cog = bot.cogs["Misc"]
 
@@ -32,9 +35,6 @@ async def setup_hook():
 async def on_ready():
     print('We have logged in as {0.user}'.format(bot))
     await bot.change_presence(activity=discord.Game(name="東方Project | !help"))
-
-
-
 
 
 @bot.event

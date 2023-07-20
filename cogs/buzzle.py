@@ -45,7 +45,7 @@ class BuzzleCog(commands.Cog, name='Buzzle'):
             await self.bot.get_channel(826343308870680646).send(f"Buzzle end <@&905730976892715008>")  # spam
             await self.bot.get_channel(768448152826282019).send(f"Buzzle end <@&905750415629516801>")  # buzzle
 
-    @app_commands.command(name='cd', description='Checks the countdown to the next buzzle')
+    @app_commands.command(name='countdown', description='Checks the countdown to the next buzzle')
     async def cd(self, interaction: discord.Interaction):
         await interaction.response.send_message(await Buzzle.schedule_countdown())
 

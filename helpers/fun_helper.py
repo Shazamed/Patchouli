@@ -15,7 +15,7 @@ async def stonks(ticker):
     stonks_url = f'https://www.marketwatch.com/investing/stock/{ticker}'
     output_text = f'<{stonks_url}>'
     async with aiohttp.ClientSession() as session:
-        async with session.get((stonks_url)) as resp:
+        async with session.get(stonks_url) as resp:
             content = await resp.text()
     soup = bs4.BeautifulSoup(content, 'html.parser')
     elems1 = soup.select(
