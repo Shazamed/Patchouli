@@ -175,6 +175,8 @@ async def nutrimatic(text):
     output_text = nutrimatic_url
     async with aiohttp.ClientSession() as session:
         async with session.get(nutrimatic_url) as resp:
+            if resp.status != 200:
+                return "Error retrieving info!"
             content = await resp.text()
             soup = bs4.BeautifulSoup(content, 'html.parser')
             if len(soup.find_all('span')) == 0:
@@ -235,8 +237,8 @@ async def reverse(text):
     return text[::-1]
 
 
-def braille(text):
-    brailleDict = {
+async def braille(text, direction):
+    braille_dict = {
         'a': '⠁', 'b': '⠃', 'c': '⠉',
         'd': '⠙', 'e': '⠑', 'f': '⠋',
         'g': '⠛', 'h': '⠓', 'i': '⠊',
@@ -247,7 +249,7 @@ def braille(text):
         'v': '⠧', 'w': '⠺', 'x': '⠭',
         'y': '⠽', 'z': '⠵', ' ': '⠀'
     }
-    brailleDotsDict = {
+    braille_dots_dict = {
         'a': '100000', 'b': '101000', 'c': '110000',
         'd': '110100', 'e': '100100', 'f': '111000',
         'g': '111100', 'h': '101100', 'i': '011000',
@@ -258,22 +260,22 @@ def braille(text):
         'v': '101011', 'w': '011101', 'x': '110011',
         'y': '110111', 'z': '100111', ' ': '/'
     }
-    brailleList = []
-    if all(character in ['1', '0', ' ', '/'] for character in text) and len(text) > 5:
-        for brailleSequence in text.split():
-            for brailleLetter, brailleDot in brailleDotsDict.items():
-                if brailleSequence == brailleDot:
-                    brailleList.append(brailleLetter)
+    output_text = ""
+    if direction == 'd':
+    # if all(character in ['1', '0', ' ', '/'] for character in text) and len(text) > 5:
+        for braille_sequence in text.split():
+            for braille_character, braille_dot in braille_dots_dict.items():
+                if braille_sequence == braille_dot:
+                    output_text += braille_character
     else:
         for character in text.lower():
-            if brailleDict.get(character) is not None:
-                brailleList.append(brailleDict.get(character))
-        brailleList.append('\n')
+            if braille_dict.get(character) is not None:
+                output_text += braille_dict.get(character)
+        output_text += '\n'
         for character in text.lower():
-            if brailleDict.get(character) is not None:
-                brailleList.append(brailleDotsDict.get(character) + ' ')
-    brailleFinal = ''.join(brailleList)
-    return brailleFinal
+            if braille_dict.get(character) is not None:
+                output_text += braille_dots_dict.get(character) + ' '
+    return output_text
 
 
 def atbash(text):

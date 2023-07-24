@@ -109,12 +109,10 @@ class BuzzleCog(commands.Cog, name='Buzzle'):
     async def rev(self, interactions: discord.Interaction, text: str):
         await interactions.response.send_message(await Buzzle.reverse(text))
 
-    @commands.command(brief='Braille encoder/decoder')
-    async def braille(self, ctx, *, arg=None):
-        if arg is None:
-            await ctx.send("usage: !braille <text>")
-        else:
-            await ctx.send(Buzzle.braille(arg))
+    @app_commands.command(name="braille", description='Braille encoder/decoder')
+    @app_commands.choices(direction=direction_choice)
+    async def braille(self, interaction: discord.Interaction, text: str, direction: app_commands.Choice[str]):
+        await interaction.response.send_message(await Buzzle.braille(text, direction.value))
 
     @commands.command(brief='Atbash cipher encoder/decoder')
     async def atbash(self, ctx, *, arg=None):
