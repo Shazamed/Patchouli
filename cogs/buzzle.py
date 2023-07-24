@@ -79,9 +79,10 @@ class BuzzleCog(commands.Cog, name='Buzzle'):
         else:
             await ctx.send(Buzzle.ascii_decoder(arg)[:2000])
 
-    @commands.command(brief='Morse code encoder/decoder')
-    async def morse(self, interactions: discord.Interaction, text: str):
-        await interactions.response.send_message(await Buzzle.morse(text))
+    @app_commands.command(name="morse", description='Morse code encoder/decoder, use "/" for spaces when decoding')
+    @app_commands.choices(direction=direction_choice)
+    async def morse(self, interactions: discord.Interaction, text: str, direction: app_commands.Choice[str]):
+        await interactions.response.send_message(await Buzzle.morse(text, direction.value))
 
     @app_commands.command(name='vigenere', description='Vigenere cipher encoder/decoder')
     @app_commands.choices(direction=direction_choice)

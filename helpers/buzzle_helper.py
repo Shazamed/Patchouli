@@ -84,8 +84,9 @@ async def ascii_decoder(text):
     return output_text
 
 
-async def morse(text):
+async def morse(text, direction):
     output_text = ""
+    print(direction)
     morse_dict = {
         "a": ".-", "b": "-...", "c": "-.-.",
         "d": "-..", "e": ".", "f": "..-.",
@@ -102,18 +103,21 @@ async def morse(text):
     }
     text = text.replace('–', '-')
     text = text.replace('/', ' ')
-    if all(character in ['.', '-', ' ', '/'] for character in text):
+    if all(character in ['.', '-', ' ', '/'] for character in text) and direction == 'd':
+        output_text += f"Decoding {text}:\n"
         for sequence in text.split():
             for morse_char, morse_sequence in morse_dict.items():
                 if morse_sequence == sequence:
                     output_text += morse_char.upper()
-
-    elif all(character.isalnum() or character.isspace() for character in text):
+    elif direction == 'd':
+        return "Invalid format for decoding"
+    elif all(character.isalnum() or character.isspace() for character in text) and direction == 'e':
+        output_text += f"Encoding {text}:\n"
         for morse_char in text.lower():
             if morse_dict.get(morse_char) is not None:
                 output_text += morse_dict.get(morse_char) +"\t"
     else:
-        return "Type alpha or morse sequence in text only"
+        return "Invalid format for encoding, use alphanumerical characters only"
 
     return output_text
 
