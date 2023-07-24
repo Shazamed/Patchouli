@@ -1,5 +1,6 @@
 from discord.ext import commands
 import discord
+from discord import app_commands
 import lavalink
 
 
@@ -203,17 +204,17 @@ class MusicCog(commands.Cog, name='Music'):
         await self.connect_channel(ctx.guild.id, None)
         await ctx.send('Disconnected')
 
-    @commands.command()
-    async def skip(self, ctx):
-        player = self.bot.lavalink.player_manager.get(ctx.guild.id)
-        if player is None:
-            return await ctx.send("Use the !play command first")
-        if not player.is_connected:
-            return await ctx.send("I'm not in a voice channel!")
-        if not ctx.author.voice or (player.is_connected and ctx.author.voice.channel.id != int(player.channel_id)):
-            return await ctx.send("You are not in my voice channel!")
+    @app_commands.command(name="skip")
+    async def skip(self, interactions: discord.Interaction):
+        player = self.bot.lavalink.player_manager.get(interactions.guild.id)
+        # if player is None:
+        #     return await ctx.send("Use the !play command first")
+        # if not player.is_connected:
+        #     return await ctx.send("I'm not in a voice channel!")
+        # if not ctx.author.voice or (player.is_connected and ctx.author.voice.channel.id != int(player.channel_id)):
+        #     return await ctx.send("You are not in my voice channel!")
         await player.skip()
-        await ctx.send("Skipping current song")
+        await interactions.response.send_message("Skipping current song")
 
     @commands.command()
     async def shuffle(self, ctx):

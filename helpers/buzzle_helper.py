@@ -10,7 +10,7 @@ from selenium import webdriver
 from selenium.webdriver.firefox.options import Options
 import time
 import dateutil
-
+from helpers import db_helper
 
 async def a1z26_e(text):  # a1z26 cipher
     output_text = f"Encoding {text}:\n"
@@ -127,7 +127,7 @@ async def vigenere(text, key, direction):
         direction = -1  # direction = 1 for encoding and -1 for decoding
         output_text += "Decoding "
     else:
-        return 'Something is wrong with the command arguments, use ", " to separate arguments'
+        return "Key must only contain alphabetical characters"
     output_text += f"text: '{text}' with key: '{key}'\n"
     j = 0
     for i in range(len(text)):
@@ -144,12 +144,10 @@ async def b64(text, direction):
         text_bytes = text.encode()
         text_b64_bytes = base64.b64encode(text_bytes)
         return text_b64_bytes.decode()
-    elif direction == 'd':
+    else:
         text_b64_bytes = text.encode()
         text_bytes = base64.b64decode(text_b64_bytes)
         return text_bytes.decode()
-    else:
-        return 'Encoding/decoding not specified'
 
 
 async def freq(text):
@@ -309,8 +307,8 @@ async def qat(text):
 
 
 def multi_tap(text, ):
-    phoneList = []
-    phoneDict = {
+    output_text = ""
+    phone_dict = {
         'a': '2', 'b': '22', 'c': '222',
         'd': '3', 'e': '33', 'f': '333',
         'g': '4', 'h': '44', 'i': '444',
@@ -324,15 +322,15 @@ def multi_tap(text, ):
     text = text.replace('-', ' ')
     if all(character.isdecimal() or character.isspace() for character in text):
         for sequence in text.split():
-            for phoneLetter, phoneNum in phoneDict.items():
+            for phoneLetter, phoneNum in phone_dict.items():
                 if phoneNum == sequence:
                     phoneList.append(phoneLetter)
         phoneFinal = ''.join(phoneList)
         return phoneFinal
     else:
         for letters in text:
-            if phoneDict.get(letters) is not None:
-                phoneList.append(phoneDict.get(letters))
+            if phone_dict.get(letters) is not None:
+                phoneList.append(phone_dict.get(letters))
         phoneFinal = ' '.join(phoneList)
         return phoneFinal
 
@@ -392,6 +390,9 @@ async def schedule_add(scheduled):
     buzzle_time_text = time_elem[0].text.strip()
     time_split = buzzle_time_text.removesuffix(" (recurring)").split("-")
     buzzle_start_datetime = dateutil.parser.parse(time_split[0])
+
+    # await db_helper.insert_row(buzzle_name, buzzle_start_datetime, buzzle_start_datetime)
+
     if len(time_split) > 1:
         if time_split[1].isdecimal():
             buzzle_end_datetime = dateutil.parser.parse(" ".join(buzzle_time_text.split(" ")[:-1])+" "+time_split[1])
@@ -404,6 +405,7 @@ async def schedule_add(scheduled):
     schedule_df.loc[len(schedule_df)] = [buzzle_name, buzzle_start_datetime, str(buzzle_end_datetime)]
     schedule_df.to_csv("./data/schedule.csv", index=False)
     schedule_df = schedule_df.sort_values('Start date')
+
     for x in range(0, len(schedule_df)):
         start_date_epoch = int(schedule_df.iloc[x, 1].to_pydatetime().timestamp())
         try:
@@ -416,7 +418,6 @@ async def schedule_add(scheduled):
 
 async def schedule_remove():
     output_text = "Schedule:"
-    # schedule_str_list = ["Schedule:"]
     schedule_df = pandas.read_csv("./data/schedule.csv", parse_dates=['Start date'])
     schedule_df = schedule_df[:-1]
     schedule_df.to_csv("./data/schedule.csv", index=False)

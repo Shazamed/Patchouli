@@ -11,6 +11,12 @@ class BuzzleCog(commands.Cog, name='Buzzle'):
         self.bot = bot
 
     roles_list = {'🅱️': "🅱️"}
+    
+    direction_choice = [
+        app_commands.Choice(name="Encode", value='e'),
+        app_commands.Choice(name="Decode", value='d')
+    ]
+
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -49,15 +55,18 @@ class BuzzleCog(commands.Cog, name='Buzzle'):
     async def cd(self, interaction: discord.Interaction):
         await interaction.response.send_message(await Buzzle.schedule_countdown())
 
-    @app_commands.command(name='a1z26_encode', description='A1Z26 encoder, letters to numbers')
-    @app_commands.describe(text="Letters to numbers, separate by space")
-    async def a1z26_e(self, interaction, text: str):
-        await interaction.response.send_message(await Buzzle.a1z26_e(text))
+    @app_commands.command(name='a1z26', description='A1Z26 encoder/decoder')
+    @app_commands.choices(direction=direction_choice)
+    async def a1z26(self, interaction, text: str, direction: app_commands.Choice[str]):
+        if direction.value == 'e':
+            await interaction.response.send_message(await Buzzle.a1z26_e(text))
+        else:
+            await interaction.response.send_message(await Buzzle.a1z26_d(text))
 
-    @app_commands.command(name='a1z26_decode', description='A1Z26 decoder, numbers to letters')
-    @app_commands.describe(text="Numbers to letters, separate by space")
-    async def a1z26_d(self, interaction, text: str):
-        await interaction.response.send_message(await Buzzle.a1z26_d(text))
+    # @app_commands.command(name='a1z26_decode', description='A1Z26 decoder, numbers to letters')
+    # @app_commands.describe(text="Numbers to letters, separate by space")
+    # async def a1z26_d(self, interaction, text: str):
+    #     await interaction.response.send_message(await Buzzle.a1z26_d(text))
 
     @app_commands.command(name='rot', description='Caesar/ROT cipher')
     async def caesar(self, interactions: discord.Interaction, text: str, shift: str):
@@ -74,14 +83,15 @@ class BuzzleCog(commands.Cog, name='Buzzle'):
     async def morse(self, interactions: discord.Interaction, text: str):
         await interactions.response.send_message(await Buzzle.morse(text))
 
-    @app_commands.command(name='vigenere', description='Vigenere cipher encoder/decoder, decoding is by default')
-    async def vig(self, interactions: discord.Interaction, text: str, key: str, direction: str="d"):
-        await interactions.response.send_message(await Buzzle.vigenere(text, key, direction))
+    @app_commands.command(name='vigenere', description='Vigenere cipher encoder/decoder')
+    @app_commands.choices(direction=direction_choice)
+    async def vig(self, interactions: discord.Interaction, text: str, key: str, direction: app_commands.Choice[str]):
+        await interactions.response.send_message(await Buzzle.vigenere(text, key, direction.value))
 
-    @app_commands.command(name='b64', description='Base64 text encoder/decoder, decoding is by default')
-    @app_commands.describe(direction="Type 'd' or 'e' for decoding and encoding respectively")
-    async def b64(self, interactions: discord.Interaction, text: str, direction: str="d"):
-        await interactions.response.send_message(await Buzzle.b64(text, direction))
+    @app_commands.command(name='b64', description='Base64 text encoder/decoder')
+    @app_commands.choices(direction=direction_choice)
+    async def b64(self, interactions: discord.Interaction, text: str, direction: app_commands.Choice[str]):
+        await interactions.response.send_message(await Buzzle.b64(text, direction.value))
 
     @app_commands.command(name='frequency', description='Frequency analysis')
     async def freq(self, interaction: discord.Interaction, text: str):
@@ -126,9 +136,10 @@ class BuzzleCog(commands.Cog, name='Buzzle'):
         await asyncio.sleep(5)
         await interaction.followup.send((await Buzzle.qat(text))[:2000])
 
-    @app_commands.command(name="multitap",  description="Multitap phone cipher encoder/decoder, decoding is by default")
-    async def phone(self, interactions: discord.Interaction, text: str, direction: str):
-        await interactions.response.send_message(await Buzzle.multi_tap(text, direction))
+    @app_commands.command(name="multitap",  description="Multitap phone cipher encoder/decoder")
+    @app_commands.choices(direction=direction_choice)
+    async def phone(self, interactions: discord.Interaction, text: str, direction: app_commands.Choice[str]):
+        await interactions.response.send_message(await Buzzle.multi_tap(text, direction.value))
 
     @app_commands.command(name="sch-add", description='Add an upcoming buzzle hunt to the schedule')
     async def schedule_add(self, interaction: discord.Interaction, index: int):
