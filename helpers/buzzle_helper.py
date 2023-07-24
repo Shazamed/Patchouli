@@ -86,7 +86,6 @@ async def ascii_decoder(text):
 
 async def morse(text, direction):
     output_text = ""
-    print(direction)
     morse_dict = {
         "a": ".-", "b": "-...", "c": "-.-.",
         "d": "-..", "e": ".", "f": "..-.",
@@ -103,21 +102,23 @@ async def morse(text, direction):
     }
     text = text.replace('–', '-')
     text = text.replace('/', ' ')
-    if all(character in ['.', '-', ' ', '/'] for character in text) and direction == 'd':
-        output_text += f"Decoding {text}:\n"
-        for sequence in text.split():
-            for morse_char, morse_sequence in morse_dict.items():
-                if morse_sequence == sequence:
-                    output_text += morse_char.upper()
-    elif direction == 'd':
-        return "Invalid format for decoding"
-    elif all(character.isalnum() or character.isspace() for character in text) and direction == 'e':
-        output_text += f"Encoding {text}:\n"
-        for morse_char in text.lower():
-            if morse_dict.get(morse_char) is not None:
-                output_text += morse_dict.get(morse_char) +"\t"
-    else:
-        return "Invalid format for encoding, use alphanumerical characters only"
+    if direction == 'd':
+        if all(character in ['.', '-', ' ', '/'] for character in text):
+            output_text += f"Decoding {text}:\n"
+            for sequence in text.split():
+                for morse_char, morse_sequence in morse_dict.items():
+                    if morse_sequence == sequence:
+                        output_text += morse_char.upper()
+        else:
+            return "Invalid format for decoding"
+    elif direction == 'e':
+        if all(character.isalnum() or character.isspace() for character in text):
+            output_text += f"Encoding {text}:\n"
+            for morse_char in text.lower():
+                if morse_dict.get(morse_char) is not None:
+                    output_text += morse_dict.get(morse_char) + "\t"
+        else:
+            return "Invalid format for encoding, use alphanumerical characters only"
 
     return output_text
 
@@ -214,22 +215,20 @@ async def calendar():
 
 
 
-def hexadecimal(text):
-    hexList = []
-    text = text.split(', ')
-    if text[0] == 'e' and len(text) == 2:
-        for number in text[1].split():
+async def hexadecimal(text, direction):
+    output_text = ""
+    if direction == 'e':
+        for number in text.split():
             if number.isdecimal():
-                hexList.append(format(int(number), 'x'))
+                output_text += format(int(number), 'x')
             else:
                 return 'Text must be decimal'
-    elif text[0] == 'd' and len(text) == 2:
-        for number in text[1].split():
-            hexList.append(str(int(number, 16)))
+    elif direction == 'd':
+        for number in text.split():
+            output_text += str(int(number, 16))
     else:
         return 'Something is wrong with the command arguments, use ", " to separate arguments'
-    hexFinal = ' '.join(hexList)
-    return hexFinal
+    return output_text
 
 
 async def reverse(text):

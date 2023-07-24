@@ -17,7 +17,6 @@ class BuzzleCog(commands.Cog, name='Buzzle'):
         app_commands.Choice(name="Decode", value='d')
     ]
 
-
     @commands.Cog.listener()
     async def on_ready(self):
         await self.timer.start()
@@ -63,11 +62,6 @@ class BuzzleCog(commands.Cog, name='Buzzle'):
         else:
             await interaction.response.send_message(await Buzzle.a1z26_d(text))
 
-    # @app_commands.command(name='a1z26_decode', description='A1Z26 decoder, numbers to letters')
-    # @app_commands.describe(text="Numbers to letters, separate by space")
-    # async def a1z26_d(self, interaction, text: str):
-    #     await interaction.response.send_message(await Buzzle.a1z26_d(text))
-
     @app_commands.command(name='rot', description='Caesar/ROT cipher')
     async def caesar(self, interactions: discord.Interaction, text: str, shift: str):
         await interactions.response.send_message(Buzzle.caesar(text, shift))
@@ -106,12 +100,10 @@ class BuzzleCog(commands.Cog, name='Buzzle'):
     async def cal(self, ctx):
         await ctx.send(await Buzzle.calendar())
 
-    @commands.command(name='hex', aliases=['hexadecimal'], brief='Hexadecimal to decimal encoder/decoder')
-    async def hexadecimal(self, ctx, *, arg=None):
-        if arg is None:
-            await ctx.send("Usage: !hex <e/d>, <string of numbers>")
-        else:
-            await ctx.send(Buzzle.hexadecimal(arg))
+    @app_commands.command(name='hex', description='Hexadecimal to decimal encoder/decoder')
+    @app_commands.choices(direction=direction_choice)
+    async def hexadecimal(self, interaction: discord.Interaction, text: str, direction: app_commands.Choice[str]):
+        await interaction.response.send_message(await Buzzle.hexadecimal(text, direction.value))
 
     @app_commands.command(name='rev', description='String reverser')
     async def rev(self, interactions: discord.Interaction, text: str):
