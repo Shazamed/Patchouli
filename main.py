@@ -34,7 +34,7 @@ async def setup_hook():
 @bot.event
 async def on_ready():
     print('We have logged in as {0.user}'.format(bot))
-    await bot.change_presence(activity=discord.Game(name="東方Project | !help"))
+    await bot.change_presence(activity=discord.Game(name="東方Project | /help"))
 
 
 @bot.event

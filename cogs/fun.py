@@ -6,7 +6,30 @@ import time
 from helpers import bad_apple_helper as ba, fun_helper as fun, reddit_helper as reddit
 import discord
 
+class HelpSelect(discord.ui.Select):
+    def __init__(self, bot):
+        options = [
+            discord.SelectOption(label="Buzzle", emoji="🅱️", description="buzzle commands"),
+            discord.SelectOption(label="Misc", emoji="🎲", description="miscellaneous commands"),
+            discord.SelectOption(label="Music", emoji="🎵", description="music commands")
+        ]
+        super().__init__(placeholder="Choose a category", max_values=1, min_values=1, options=options)
+        self.bot = bot
 
+    async def callback(self, interaction: discord.Interaction):
+        emoji = {"Buzzle": "🅱", "Misc": "🎲", "Music": "🎵"}
+        category = self.values[0]
+        help_embed = discord.Embed(title=f"{emoji[category]} {category} Commands", colour=0xc566ed)
+
+        for x in self.bot.get_cog(self.values[0]).get_app_commands():
+            help_embed.add_field(name=x.name, value=x.description)
+        await interaction.response.edit_message(embed=help_embed)
+
+
+class HelpView(discord.ui.View):
+    def __init__(self, *, bot, timeout=180):
+        super().__init__(timeout=timeout)
+        self.add_item(HelpSelect(bot))
 class FunCog(commands.Cog, name='Misc'):
     def __init__(self, bot):
         self.bot = bot
@@ -131,6 +154,14 @@ class FunCog(commands.Cog, name='Misc'):
         else:
             await ctx.send("That is not a valid url")
 
+    @app_commands.command(name="help")
+    async def help_command(self, interactions: discord.Interaction):
+
+        help_embed = discord.Embed(title="Patchouli Help", colour=0xc566ed, description="Choose a category for more info")
+        help_embed.add_field(name="🅱️ Buzzle", value="buzzle commands", inline=False)
+        help_embed.add_field(name="🎲 Misc", value="miscellaneous commands", inline=False)
+        help_embed.add_field(name="🎵 Music", value="music commands", inline=False)
+        await interactions.response.send_message(embed=help_embed, view=HelpView(bot=self.bot))
 
 async def setup(bot):
     await bot.add_cog(FunCog(bot))
